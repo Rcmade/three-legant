@@ -1,0 +1,89 @@
+{
+  "categories": [
+    {
+      "id": "vCny-DVz7DxK",
+      "name": "TV",
+      "description": "Movies",
+      "parentCategoryId": null,
+      "createdAt": "2024-09-28T05:27:45.888Z",
+      "updatedAt": "2024-09-28T05:27:45.888Z"
+    }
+  ],
+  "products": [
+    {
+      "id": "1p",
+      "name": "Fantastic Plastic Chicken",
+      "sortDescription": "Awesome",
+      "description": "The Apollotech B340 is an affordable wireless mouse with reliable connectivity, 12 months battery life and modern design",
+      "sku": "ZCRT814MUO",
+      "categoryId": "vCny-DVz7DxK",
+      "price": 420.1,
+      "discountedPrice": 968.29,
+      "stock": 73,
+      "currentVariantType": "Color",
+      "variantValue": "lime",
+      "isAvailable": false,
+      "primaryImage": "1p img",
+      "brand": "Langosh - Buckridge",
+      "userId": "Xs5uQcEudFe",
+      "createdAt": "2024-09-28T05:27:45.889Z",
+      "updatedAt": "2024-09-28T05:27:45.889Z",
+      "meta": {
+        "additionalInfo": "Coniuratio cruentus tabella absorbeo perferendis artificiose nemo cum tolero umbra."
+      }
+    },
+    {
+      "id": "2v",
+      "name": "Fantastic Plastic Chicken - sky blue",
+      "sortDescription": "Awesome",
+      "description": "The Apollotech B340 is an affordable wireless mouse with reliable connectivity, 12 months battery life and modern design",
+      "sku": "IZOFRPTB0G",
+      "categoryId": "vCny-DVz7DxK",
+      "price": 820.59,
+      "discountedPrice": 331.08,
+      "stock": 27,
+      "currentVariantType": "Color",
+      "variantValue": "sky blue",
+      "isAvailable": false,
+      "primaryImage": "2v img",
+      "brand": "Langosh - Buckridge",
+      "userId": "Xs5uQcEudFe",
+      "parentId": "1p",
+      "createdAt": "2024-09-28T05:27:45.890Z",
+      "updatedAt": "2024-09-28T05:27:45.890Z",
+      "meta": {
+        "additionalInfo": "Aegrotatio defluo curso tantillus caute."
+      }
+    }
+  ],
+  "productImages": [
+    {
+      "id": "1img",
+      "productId": "1p",
+      "imageUrl": "1p s img",
+      "createdAt": "2024-09-28T05:27:45.889Z",
+      "role": "SUB_IMAGES"
+    },
+    {
+      "id": "2img",
+      "productId": "1p",
+      "imageUrl": "1p s img2",
+      "createdAt": "2024-09-28T05:27:45.889Z",
+      "role": "SUB_IMAGES"
+    },
+    {
+      "id": "2v img",
+      "productId": "2v",
+      "imageUrl": "2v s img",
+      "createdAt": "2024-09-28T05:27:45.889Z",
+      "role": "SUB_IMAGES"
+    },
+    {
+      "id": "2v img2",
+      "productId": "2v",
+      "imageUrl": "2v s img2",
+      "createdAt": "2024-09-28T05:27:45.890Z",
+      "role": "SUB_IMAGES"
+    }
+  ]
+}

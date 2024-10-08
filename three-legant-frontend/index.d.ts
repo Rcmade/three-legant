@@ -1,0 +1,1 @@
+import { Res } from "../rpc";

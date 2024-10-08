@@ -1,0 +1,19 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    // "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "skipLibCheck": true,
+    // "types": ["node"],
+    "module": "CommonJS",
+    "esModuleInterop": true,
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "baseUrl": ".", // Set the base directory (root of your project)
+    "paths": {
+      "@/*": ["./src/*"] // Define the alias (adjust the path as per your directory structure)
+    }
+  }
+}

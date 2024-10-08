@@ -50,7 +50,7 @@ const ChangeProductQty = ({
           withCredentials: true,
         },
       );
-      await revalidateAllCart();
+      await revalidateAllCart(isOpen ? "path" : "tag");
       if (isOpen) {
         mutate(getBackendUrl(getAllCartProductApi));
       }

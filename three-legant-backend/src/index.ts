@@ -10,10 +10,16 @@ import user from "@/routes/user";
 import cart from "@/routes/cart";
 import { cors } from "hono/cors";
 import { initAuthConfig, type AuthConfig } from "@hono/auth-js";
+import { secureHeaders } from "hono/secure-headers";
 
-const app = new Hono();
+type Bindings = {
+  DATABASE_URL: string;
+};
+const app = new Hono<{ Bindings: Bindings }>();
 
 app.use(logger());
+
+app.use(secureHeaders());
 
 app.use("*", initAuthConfig(getAuthConfig));
 
@@ -33,7 +39,7 @@ app.use(
   })
 );
 // app.use("/api/wishlist/*",                                                                                                   );
-export const routes = app
+const routes = app
   .route("/test", testRoute)
   .route("/api/user", user)
   .route("/api/cart", cart)
@@ -50,8 +56,9 @@ function getAuthConfig(c: Context): AuthConfig {
   };
 }
 
-serve({
-  fetch: routes.fetch,
-  port,
-});
+// serve({
+//   fetch: routes.fetch,
+//   port,
+// });
 
+export default routes;

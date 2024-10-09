@@ -3,8 +3,9 @@ import { users, UserWishList } from "@/db/schema";
 import { WishlistInputT } from "@/types";
 import { wishlistInput } from "@/zodSchema/wishListSchema";
 import { and, eq, or } from "drizzle-orm";
+import { Context } from "hono";
 
-export const createWishlist = async (data: WishlistInputT) => {
+export const createWishlist = async (data: WishlistInputT, c: Context) => {
   const parseData = wishlistInput.safeParse(data);
   if (parseData.error) {
     return {
@@ -15,7 +16,7 @@ export const createWishlist = async (data: WishlistInputT) => {
 
   const d = parseData.data;
 
-  const [isExist] = await db
+  const [isExist] = await db(c)
     .select()
     .from(UserWishList)
     .where(
@@ -28,16 +29,17 @@ export const createWishlist = async (data: WishlistInputT) => {
   if (isExist) {
     return isExist;
   }
-  const [result] = await db.insert(UserWishList).values(d).returning();
+  const [result] = await db(c).insert(UserWishList).values(d).returning();
 
   return result;
 };
 
 export const getWishlistByIdOrProductId = async (
   id: string,
-  userId: string
+  userId: string,
+  c: Context
 ) => {
-  const [result] = await db
+  const [result] = await db(c)
     .select({
       productId: UserWishList.productId,
     })
@@ -55,9 +57,10 @@ export const getWishlistByIdOrProductId = async (
 
 export const removeWishListByIdOrProductId = async (
   id: string,
-  userId: string
+  userId: string,
+  c: Context
 ) => {
-  const [result] = await db
+  const [result] = await db(c)
     .delete(UserWishList)
     .where(
       and(

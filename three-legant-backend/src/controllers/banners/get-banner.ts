@@ -1,9 +1,10 @@
 import { and, eq, gte, lte } from "drizzle-orm";
 import { db } from "@/db/db";
 import { banners } from "@/db/schema/bannerSchema";
+import { Context } from "hono";
 
-export const getBannersByType = async (type: string) => {
-  const result = await db
+export const getBannersByType = async (type: string,c:Context) => {
+  const result = await db(c)
     .select({
       id: banners.id,
       imageUrl: banners.imageUrl,

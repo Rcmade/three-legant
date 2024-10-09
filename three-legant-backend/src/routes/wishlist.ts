@@ -11,7 +11,7 @@ const wishlist = new Hono()
     const params = c.req.param("id") || "";
     const wishlist = await getWishlistByIdOrProductId(
       params,
-      c.get("authUser").token?.sub!
+      c.get("authUser").token?.sub!, c
     );
     if (wishlist) {
       return c.json(wishlist);
@@ -24,7 +24,7 @@ const wishlist = new Hono()
     async (c, nex) => {
       const auth = c.get("authUser");
       const data = await c.req.json();
-      const res = await createWishlist({ ...data, userId: auth.token?.sub });
+      const res = await createWishlist({ ...data, userId: auth.token?.sub },c);
       if ("error" in res) {
         return c.json(res, 400);
       }
@@ -35,7 +35,7 @@ const wishlist = new Hono()
     const params = c.req.param("id") || "";
     const wishlist = await removeWishListByIdOrProductId(
       params,
-      c.get("authUser").token?.sub!
+      c.get("authUser").token?.sub!,c
     );
     if (wishlist) {
       return c.json(wishlist);

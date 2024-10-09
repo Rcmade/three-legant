@@ -2,9 +2,11 @@ import { db } from "@/db/db";
 import { products } from "@/db/schema";
 import { PaginationParams } from "@/types";
 import { and, count, eq, lte, sql } from "drizzle-orm"; // Import necessary query helpers
+import { Context } from "hono";
 
 export const getProducts = async (
-  paginationParams: PaginationParams & { sortBy?: keyof typeof products }
+  paginationParams: PaginationParams & { sortBy?: keyof typeof products },
+  c: Context
 ) => {
   const {
     limit = 10,
@@ -25,7 +27,7 @@ export const getProducts = async (
     priceFilter ? lte(products.price, priceFilter?.toString()) : undefined // Filter by price (<=)
   );
   // Fetch products with limit, offset, and sorting
-  const productList = await db
+  const productList = await db(c)
     .select()
     .from(products)
     .where(whereClause)
@@ -33,7 +35,7 @@ export const getProducts = async (
     .offset(offset)
     .orderBy((products[sortBy] || products.name) as any); // Sort by the specified field
   // Optionally, get the total number of products for pagination metadata
-  const totalProducts = await db
+  const totalProducts = await db(c)
     .select({ count: count() })
     .from(products)
     .where(whereClause);
@@ -48,8 +50,8 @@ export const getProducts = async (
   };
 };
 
-export const getProductById = async (id: string) => {
-  const product = await db
+export const getProductById = async (id: string, c: Context) => {
+  const product = await db(c)
     .select()
     .from(products)
     .where(eq(products.id, id))

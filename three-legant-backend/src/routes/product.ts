@@ -8,7 +8,7 @@ import { HTTPException } from "hono/http-exception";
 
 const product = new Hono()
   .get("/home-api/new-arrival", async (c) => {
-    const newArrival = await getNewARrival();
+    const newArrival = await getNewARrival(c);
     return c.json(newArrival);
   })
   .get("/", async (c) => {
@@ -19,12 +19,12 @@ const product = new Hono()
       priceFilter: +params.priceFilter,
       search: params.search,
       sortBy: params.sortBy as any,
-    });
+    },c);
     return c.json(product);
   })
   .get("/product-details/:id", async (c) => {
     const params = c.req.param("id") || "";
-    const product = await getProductDetails(params);
+    const product = await getProductDetails(params,c);
     if (!product) {
       throw new HTTPException(401, { message: "Product not found" });
     }

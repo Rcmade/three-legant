@@ -11,7 +11,7 @@ const user = new Hono()
     //  zValidator("json", upsertUserSchema),
     async (c) => {
       const data = await c.req.json();
-      const userInfo = await upsertUser(data);
+      const userInfo = await upsertUser(data,c);
       return c.json(userInfo);
     }
   )
@@ -23,7 +23,7 @@ const user = new Hono()
       return c.json(null);
     }
 
-    const userInfo = await userBasicInfo(userId);
+    const userInfo = await userBasicInfo(userId,c);
     return c.json(userInfo);
   });
 // .post("/", (c) => c.json({ a: "create a book" }, 201))

@@ -3,8 +3,9 @@ import { products, UserCart } from "@/db/schema";
 import { CartInputT, PaginationParams } from "@/types"; // Make sure to define this type appropriately
 import { cartInput } from "@/zodSchema/cartSchema";
 import { and, count, desc, eq, lte, or, sql } from "drizzle-orm";
+import { Context } from "hono";
 
-export const createCartItem = async (data: CartInputT) => {
+export const createCartItem = async (data: CartInputT,c:Context) => {
   // Validate the input
   const parseData = cartInput.safeParse(data);
   if (parseData.error) {
@@ -16,7 +17,7 @@ export const createCartItem = async (data: CartInputT) => {
   const d = parseData.data;
 
   // Query the product stock and check for existing cart item
-  const [productAndCartItem] = await db
+  const [productAndCartItem] = await db(c)
     .select({
       productStock: products.stock,
       cartQty: UserCart.qty,
@@ -50,7 +51,7 @@ export const createCartItem = async (data: CartInputT) => {
   };
   // If the product already exists in the cart, update the quantity
   if (cartQty) {
-    const [updatedCartItem] = await db
+    const [updatedCartItem] = await db(c)
       .update(UserCart)
       .set({
         qty: totalQty > productStock ? +d.qty : totalQty,
@@ -63,12 +64,12 @@ export const createCartItem = async (data: CartInputT) => {
   }
 
   // If the product is not in the cart, insert a new cart item
-  const [newCartItem] = await db.insert(UserCart).values(d).returning(select);
+  const [newCartItem] = await db(c).insert(UserCart).values(d).returning(select);
   return newCartItem; // Return the newly created cart item
 };
 
-export const getCartByIdOrProductId = async (id: string, userId: string) => {
-  const [result] = await db
+export const getCartByIdOrProductId = async (id: string, userId: string,c:Context) => {
+  const [result] = await db(c)
     .select({
       productId: UserCart.productId,
       qty: UserCart.qty,
@@ -87,9 +88,10 @@ export const getCartByIdOrProductId = async (id: string, userId: string) => {
 
 export const removeCartItemByIdOrProductId = async (
   id: string,
-  userId: string
+  userId: string,
+  c:Context
 ) => {
-  const [result] = await db
+  const [result] = await db(c)
     .delete(UserCart)
     .where(
       and(
@@ -105,9 +107,9 @@ export const removeCartItemByIdOrProductId = async (
 export const updateCartItemQuantity = async (
   id: string,
   userId: string,
-  qty: number
+  qty: number,c:Context
 ) => {
-  const [result] = await db
+  const [result] = await db(c)
     .update(UserCart)
     .set({ qty })
     .where(and(eq(UserCart.userId, userId), eq(UserCart.id, id)))
@@ -120,6 +122,7 @@ export const getAllCartProducts = async (
     sortBy?: keyof typeof UserCart;
     noLimit?: boolean;
   }
+,c:Context
 ) => {
   const {
     limit = 10, // Default limit if not provided
@@ -135,7 +138,7 @@ export const getAllCartProducts = async (
     priceFilter ? lte(products.price, priceFilter.toString()) : undefined
   );
 
-  let query = db
+  let query = db(c)
     .select({
       cartId: UserCart.id,
       productId: UserCart.productId,
@@ -173,7 +176,7 @@ export const getAllCartProducts = async (
   let totalCount = 0;
 
   if (noLimit) {
-    const [totalCartProducts] = await db
+    const [totalCartProducts] = await db(c)
       .select({ count: count() })
       .from(UserCart)
       .innerJoin(products, eq(UserCart.productId, products.id))

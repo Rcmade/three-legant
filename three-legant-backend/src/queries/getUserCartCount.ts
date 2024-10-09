@@ -1,9 +1,10 @@
 import { db } from "@/db/db";
 import { UserCart } from "@/db/schema";
 import { count, eq } from "drizzle-orm";
+import { Context } from "hono";
 
-export async function getUserCartCount(userId: string) {
-  const result = await db
+export async function getUserCartCount(userId: string,c:Context) {
+  const result = await db(c)
     .select({
       count: count(), // Using the `count` function to get the total
     })

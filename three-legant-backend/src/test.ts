@@ -30,10 +30,10 @@ const d = async () => {
   //   .where(eq(productVariants.id, "-bCCpLFLP8Sf"));
   // console.log({ a });
 
-  const a = await db
-    .select()
-    .from(productImages)
-    .where(eq(productImages.productId, "R2aq7tH1Q394"));
+  // const a = await db(c)
+  //   .select()
+  //   .from(productImages)
+  //   .where(eq(productImages.productId, "R2aq7tH1Q394"));
 };
 
 d();

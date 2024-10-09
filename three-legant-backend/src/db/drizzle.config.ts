@@ -1,4 +1,7 @@
 // import "dotenv/config";
+import { config } from "dotenv";
+config({ path: ".dev.vars" });
+
 import { defineConfig } from "drizzle-kit";
 export default defineConfig({
   dialect: "postgresql",

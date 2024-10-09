@@ -1,0 +1,39 @@
+name = "three-legant-backend"
+main = "src/index.ts"
+compatibility_date = "2024-10-09"
+compatibility_flags = [ "nodejs_compat" ]
+
+
+[env.production]
+# Your environment variables
+
+
+[env.development]
+# Your environment variables
+
+[observability]
+enabled = true
+
+ [vars]
+DATABASE_URL="postgres://default:9LZ8IljCbUTt@ep-ancient-sky-98025087.ap-southeast-1.aws.neon.tech:5432/verceldb?sslmode=require"
+
+
+# [[kv_namespaces]]
+# binding = "MY_KV_NAMESPACE"
+# id = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+
+# [[r2_buckets]]
+# binding = "MY_BUCKET"
+# bucket_name = "my-bucket"
+
+# [[d1_databases]]
+#binding = "DB" # i.e. available in your Worker on env.DB
+#database_name = "three-legant"
+#database_id = "ed888018-52e5-43e9-92c8-3394b85e5fc4"
+
+# [ai]
+# binding = "AI"
+
+# [observability]
+# enabled = true
+# head_sampling_rate = 1

@@ -1,9 +1,10 @@
 import { db } from "@/db/db";
 import { categories, products } from "@/db/schema";
 import { and, desc, eq, gt } from "drizzle-orm"; // Import necessary query helpers
+import { Context } from "hono";
 
-export const getNewARrival = async () => {
-  const latestProducts = await db
+export const getNewARrival = async (c:Context) => {
+  const latestProducts = await db(c)
     .select({
       id: products.id,
       name: products.name,

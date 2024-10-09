@@ -3,13 +3,14 @@ import { db } from "@/db/db";
 import { categories, productImages, products } from "@/db/schema";
 import { alias } from "drizzle-orm/pg-core";
 import { SubImage } from "@/types";
+import { Context } from "hono";
 
-export const getProductDetails = async (id: string) => {
+export const getProductDetails = async (id: string,c:Context) => {
   try {
     const parent = alias(products, "parent");
     const sibling = alias(products, "sibling");
 
-    const result = await db
+    const result = await db(c)
       .select({
         id: products.id,
         name: products.name,

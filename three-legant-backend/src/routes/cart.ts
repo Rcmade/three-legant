@@ -22,7 +22,7 @@ const cart = new Hono()
         throw new HTTPException(401, { message: "User not logged in" });
 
       const params = c.req.query();
-      const cartProducts = await cartRouteUtils(params, userId);
+      const cartProducts = await cartRouteUtils(params, userId,c);
       return c.json(cartProducts);
     }
   )
@@ -30,7 +30,7 @@ const cart = new Hono()
     const params = c.req.param("id") || "";
     const cartItem = await getCartByIdOrProductId(
       params,
-      c.get("authUser").token?.sub!
+      c.get("authUser").token?.sub!,c
     );
     if (cartItem) {
       return c.json(cartItem);
@@ -50,7 +50,7 @@ const cart = new Hono()
     async (c) => {
       const auth = c.get("authUser");
       const data = c.req.valid("json");
-      const res = await createCartItem({ ...data, userId: auth.token?.sub! });
+      const res = await createCartItem({ ...data, userId: auth.token?.sub! },c);
       if ("error" in res) {
         throw new HTTPException(401, { message: res.error });
       }
@@ -61,7 +61,7 @@ const cart = new Hono()
     const params = c.req.param("id") || "";
     const cartItem = await removeCartItemByIdOrProductId(
       params,
-      c.get("authUser").token?.sub!
+      c.get("authUser").token?.sub!,c
     );
     if (cartItem) {
       return c.json(cartItem);
@@ -74,7 +74,7 @@ const cart = new Hono()
     const updatedItem = await updateCartItemQuantity(
       params,
       c.get("authUser").token?.sub!,
-      qty
+      qty,c
     );
     if (updatedItem) {
       return c.json(updatedItem);

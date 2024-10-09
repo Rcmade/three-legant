@@ -3,7 +3,7 @@ import { getBannersByType } from "@/controllers/banners/get-banner";
 
 const banner = new Hono().get("/:type", async (c) => {
   const params = c.req.param("type") || "";
-  const banners = await getBannersByType(params);
+  const banners = await getBannersByType(params ,c);
   return c.json(banners);
 });
 

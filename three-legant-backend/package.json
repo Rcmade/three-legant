@@ -1,7 +1,11 @@
 {
   "name": "three-legant-backend",
   "scripts": {
-    "dev": "tsx watch src/index.ts --clear-screen=false",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy --minify",
+    "build": "pnpm run clean && node build.js",
+    "start": "node dist/index.js",
+    "clean": "rm -rf dist",
     "codegen": "bunx drizzle-kit generate  --config=./src/db/drizzle.config.ts",
     "push": "bunx drizzle-kit push  --config=./src/db/drizzle.config.ts",
     "drop": "bunx drizzle-kit drop  --config=./src/db/drizzle.config.ts",
@@ -11,25 +15,36 @@
     "gen-types": "bun src/generateTypesWithTSMorph.ts"
   },
   "dependencies": {
+    "-": "^0.0.1",
     "@auth/core": "^0.35.3",
-    "@hono/auth-js": "^1.0.10",
+    "@hono/auth-js": "^1.0.11",
     "@hono/node-server": "^1.13.1",
     "@hono/zod-validator": "^0.2.2",
+    "@neondatabase/serverless": "^0.10.1",
+    "@vercel/postgres": "^0.10.0",
     "axios": "^1.7.7",
-    "cloudinary": "^2.5.0",
+    "cloudinary": "^2.5.1",
     "dotenv": "^16.4.5",
     "drizzle-orm": "^0.33.0",
     "drizzle-zod": "^0.5.1",
-    "hono": "^4.6.2",
+    "hono": "^4.6.3",
     "nanoid": "^5.0.7",
-    "postgres": "3.3",
-    "ts-morph": "^24.0.0",
+    "pg": "^8.13.0",
+    "postgres": "~3.3.5",
     "zod": "^3.23.8"
   },
   "devDependencies": {
-    "@faker-js/faker": "^9.0.1",
-    "@types/node": "^20.16.9",
+    "@cloudflare/workers-types": "^4.20241004.0",
+    "@faker-js/faker": "^9.0.3",
+    "@types/node": "^20.16.11",
+    "@types/pg": "^8.11.10",
     "drizzle-kit": "^0.24.2",
-    "tsx": "^4.7.1"
+    "esbuild": "^0.24.0",
+    "ts-morph": "^24.0.0",
+    "ts-node-dev": "^2.0.0",
+    "tsconfig-paths": "^4.2.0",
+    "tsx": "^4.19.1",
+    "typescript": "^5.6.3",
+    "wrangler": "^3.80.2"
   }
 }

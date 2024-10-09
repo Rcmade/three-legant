@@ -1,10 +1,10 @@
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
-import postgres from "postgres";
+import pg from "postgres";
 import "dotenv/config";
 
 // PostgreSQL client configuration
-const migrationClient = postgres(process.env.DATABASE_URL!, { max: 1 });
+const migrationClient = pg(process.env.DATABASE_URL!, { max: 1 });
 
 // Main function to run migrations
 async function main() {

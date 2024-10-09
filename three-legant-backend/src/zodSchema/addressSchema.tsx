@@ -1,4 +1,4 @@
-import { onlyLetters } from "../../../three-legant-frontend/src/constant/index";
+// import { onlyLetters } from "../../../three-legant-frontend/src/constant/index";
 import { z } from "zod";
 
 // Zod Schema
@@ -11,24 +11,23 @@ export const addressSchema = z.object({
   country: z
     .string()
     .min(1, { message: "Country is required" })
-    .max(50, { message: "Country name cannot exceed 50 characters" })
-    .regex(onlyLetters, {
-      message: "Country name should only contain alphabets",
-    }),
-
+    .max(50, { message: "Country name cannot exceed 50 characters" }),
+  // .regex(onlyLetters, {
+  //   message: "Country name should only contain alphabets",
+  // }),
   city: z
     .string()
     .min(1, { message: "Town or city is required" })
-    .max(50, { message: "Town or city cannot exceed 50 characters" })
-    .regex(onlyLetters, {
-      message: "Town or city should only contain alphabets",
-    }),
-
+    .max(50, { message: "Town or city cannot exceed 50 characters" }),
+  // .regex(onlyLetters, {
+  //   message: "Town or city should only contain alphabets",
+  // }),
   state: z
     .string()
     .min(1, { message: "State is required" })
     .max(50, { message: "State cannot exceed 50 characters" })
-    .regex(onlyLetters, { message: "State should only contain alphabets" }),
+    // .regex(onlyLetters, { message: "State should only contain alphabets" }),
+    ,
 
   zipCode: z
     .string()

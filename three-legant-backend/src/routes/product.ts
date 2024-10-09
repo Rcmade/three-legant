@@ -1,5 +1,5 @@
 import { Hono } from "hono";
-import { insertProductSchema } from "@/zodSchema/productSchema";
+import  insertProductS  from "@/zodSchema/productSchema2";
 import UploadService from "@/services/uploadService";
 import { getProducts } from "@/controllers/products/get-product";
 import { getNewARrival } from "@/controllers/products/home-api/new-arrival";
@@ -33,7 +33,7 @@ const product = new Hono()
   })
   .post("/", async (c) => {
     const formData = await c.req.parseBody({ all: true });
-    const validationResult = insertProductSchema.safeParse(formData);
+    const validationResult = insertProductS.safeParse(formData);
     if (!validationResult.success) {
       return c.json({ errors: validationResult.error.errors }, 400);
     }

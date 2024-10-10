@@ -3,7 +3,7 @@ import { db } from "../src/db/db";
 import { banners } from "../src/db/schema/bannerSchema";
 
 // Function to insert banners into the database
-async function insertBannersIntoDB() {
+export async function insertBannersIntoDB() {
   console.time("Data Insertion Time");
 
   try {
@@ -40,4 +40,4 @@ async function insertBannersIntoDB() {
 }
 
 // Call the function to insert banners into the database
-insertBannersIntoDB();
+// insertBannersIntoDB();

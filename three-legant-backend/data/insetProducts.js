@@ -14,7 +14,7 @@ const {
   productImages: productImagesData,
 } = JSON.parse(rawData);
 
-const insertData = async () => {
+export const insetProducts = async () => {
   console.time("Data Insertion Time");
 
   // Clear existing data
@@ -89,5 +89,3 @@ const insertData = async () => {
   console.log("Data has been inserted into the database");
   console.timeEnd("Data Insertion Time");
 };
-
-insertData();

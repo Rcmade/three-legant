@@ -5,7 +5,7 @@ esbuild
   .build({
     entryPoints: ["./src/index.ts"], // Adjust as needed
     bundle: true,
-    outfile: "./dist/bundle.js",
+    outfile: "./dist/index.js",
     minify: true,
     sourcemap: false,
     platform: "node", // Change to 'browser' if applicable

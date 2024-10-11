@@ -1,6 +1,5 @@
 import { addCartApi } from "@/constant/apiRoute";
 import { getAxiosErrorMessage, getBackendUrl } from "@/lib/utils/stringUtils";
-import { wait } from "@/lib/utils/testUtils";
 import {
   AddCartRequestT,
   AddCartResponseT,
@@ -10,6 +9,7 @@ import axios from "axios";
 import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 
 export const addToCart = async (d: AddCartRequestT) => {
+  // console.log({d});
   try {
     const { data } = await axios.post<AddCartResponseT>(
       getBackendUrl(addCartApi),

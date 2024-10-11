@@ -4,6 +4,7 @@ import axios from "axios";
 import { getBackendUrl } from "@/lib/utils/stringUtils";
 import { upsertUserApi } from "@/constant/apiRoute";
 import { UpsertUserResponseT } from "@/types/apiResponse";
+import { cookies } from "next/headers";
 export const {
   handlers: { GET, POST },
   auth,
@@ -31,6 +32,9 @@ export const {
       const { data } = await axios.post<UpsertUserResponseT>(
         getBackendUrl(upsertUserApi),
         formateUser,
+        {
+          withCredentials: true,
+        },
       );
       user.id = data.id || user.id;
       user.email = data.email || user.email;
@@ -39,7 +43,7 @@ export const {
       user.role = data.role || user.role;
       return true;
     },
-    async session({ session, token }) {
+    async session({ session, token, ...rest }) {
       if (session.user && token.sub) {
         session.user.id = token.sub;
       }
@@ -54,8 +58,8 @@ export const {
       }
       return session;
     },
-    async jwt({ token }) {
-      if (!token.sub) return token;
+    async jwt({ token, ...rest }) {
+      // if (!token.sub) return token;
       return token;
     },
   },
@@ -63,6 +67,18 @@ export const {
   session: {
     strategy: "jwt",
   },
+
+  
   ...authProvidersConfig,
+
+  // cookies: {
+  //   sessionToken: {
+  //     options: {
+  //       sameSite: false,
+  //       httpOnly: false,
+  //       secure: false,
+  //     },
+  //   },
+  // },
   // debug: process.env.NODE_ENV === "development",
 });

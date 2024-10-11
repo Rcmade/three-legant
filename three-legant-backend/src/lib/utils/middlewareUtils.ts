@@ -1,7 +1,7 @@
 import { getAuthUser } from "@hono/auth-js";
 import { Context } from "hono";
 import { type Next } from "hono";
-import { getCookie } from "hono/cookie";
+
 
 export const verifyAuth = async (
   c: Context,

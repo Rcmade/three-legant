@@ -27,7 +27,7 @@ const CartSidebar = () => {
     fetcher,
   );
 
-  console.log({data});
+  // console.log({data});
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="px-0 sm:max-w-lg">

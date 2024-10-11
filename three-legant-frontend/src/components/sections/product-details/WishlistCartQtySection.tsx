@@ -6,6 +6,7 @@ import AddToCartButton from "@/components/buttons/AddToCartButton";
 import { ProductDetailsResponseT } from "@/types/apiResponse";
 import { useChangeProductQty } from "@/hooks/useChangeProductQty";
 import { RevalidationType } from "@/types";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 interface WishlistCartQtySectionProps {
   product: ProductDetailsResponseT["product"];
@@ -19,6 +20,7 @@ const WishlistCartQtySection = ({
   const productsQty = useChangeProductQty((s) => s.productsQty[product?.id]);
   const currentQty = productsQty || 1; // Get the quantity for the specific product
 
+  const { authorization  } = useAuthorization();
   return (
     <>
       <div className="flex w-full flex-wrap gap-6">

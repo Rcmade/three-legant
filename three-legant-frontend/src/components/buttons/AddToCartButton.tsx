@@ -1,21 +1,24 @@
 "use client";
 
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Button, ButtonProps } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { ShoppingCartIcon } from "lucide-react";
 import { usePathname } from "next/navigation";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation } from "@tanstack/react-query";
 import { addToCart } from "@/query/cart";
 import { useCartSidebar } from "@/hooks/useCartSidebar";
-import { getAllCartProductApi } from "@/constant/apiRoute";
-import { getAllCart, revalidateAllCart } from "@/actions/cartAction";
+import { addCartApi } from "@/constant/apiRoute";
+import axios from "axios";
+import { getBackendUrl } from "@/lib/utils/stringUtils";
+import { AddCartResponseT } from "@/types/apiResponse";
 
 interface AddToCartButtonProps
   extends React.HTMLAttributes<HTMLButtonElement>,
     ButtonProps {
   productId: string;
   qty?: number;
+  authorization?: string;
 }
 
 const AddToCartButton = ({
@@ -23,17 +26,12 @@ const AddToCartButton = ({
   className,
   productId,
   qty = 1,
+  authorization,
   ...rest
 }: AddToCartButtonProps) => {
-  // const { currentQty } = useChangeProductQty();
   const pathname = usePathname();
-  // const { refetch } = useQuery({
-  //   queryKey: [getAllCartProductApi],
-  //   enabled: false,
-  //   queryFn: () => getAllCart(),
-  // });
   const onOpen = useCartSidebar((s) => s.onOpen);
-
+  const [isLoading, setIsLoading] = useState(false);
   useEffect(() => {
     // Set the current cart item if data is fetched
     // if (data && "productId" in data && data.productId && !currentCartItem) {
@@ -47,22 +45,30 @@ const AddToCartButton = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-  const { isPending, mutate } = useMutation({
-    mutationFn: addToCart,
-    onSettled: async () => {
-      onOpen();
-    },
-  });
+
+  const handleAddToCart = async () => {
+    const { data } = await axios.post<AddCartResponseT>(
+      getBackendUrl(addCartApi),
+      { productId, qty },
+      {
+        withCredentials: true,
+        headers: {
+          Authorization: authorization,
+        },
+      },
+    );
+  };
 
   return (
     <Button
       // variant={"def"}
-      disabled={isPending}
+      disabled={isLoading}
       size={"lg"}
       // key={data && "productId" in data ? data?.productId : ""}
       className={cn("mx-auto w-full gap-x-4", className)}
       {...rest}
-      onClick={() => mutate({ productId, qty })}
+      onClick={() => handleAddToCart()}
+      // onClick={() => mutate({ productId, qty })}
       // onClick={currentCartItem ? removeFromCartHandle : handleAddToCart}
     >
       {children ? (

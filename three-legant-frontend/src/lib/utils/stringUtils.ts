@@ -42,14 +42,19 @@ export const getBackendUrl = (apiRoute: string) => {
   return `${process.env.NEXT_PUBLIC_API_URL}${apiRoute?.startsWith("/") ? apiRoute : `/${apiRoute}`}`;
 };
 
+export const getFrontedApiUrl = (route: string) => {
+  return `${process.env.NEXT_PUBLIC_URL}${route?.startsWith("/") ? route : `/${route}`}`;
+
+}
+
 export function getAxiosErrorMessage(error: any): { error: string } {
   const isObj = typeof error.response?.data === "object";
   // Check if it's an Axios error
   if (axios.isAxiosError(error)) {
     const errStr = String(
       error.response?.data?.error ||
-        error.response?.data?.message ||
-        error.response?.data,
+      error.response?.data?.message ||
+      error.response?.data,
     );
     const err = {
       ...(isObj ? error.response?.data : {}),
@@ -61,4 +66,11 @@ export function getAxiosErrorMessage(error: any): { error: string } {
   return {
     error: String(error?.error || "An error occurred"),
   };
+}
+
+
+export function buildCookieString(cookies: Record<string, string>): string {
+  return Object.entries(cookies)
+    .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
+    .join("; ");
 }

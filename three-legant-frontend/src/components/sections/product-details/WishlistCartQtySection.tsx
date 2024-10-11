@@ -20,7 +20,7 @@ const WishlistCartQtySection = ({
   const productsQty = useChangeProductQty((s) => s.productsQty[product?.id]);
   const currentQty = productsQty || 1; // Get the quantity for the specific product
 
-  const { authorization  } = useAuthorization();
+  const { authorization } = useAuthorization();
   return (
     <>
       <div className="flex w-full flex-wrap gap-6">
@@ -41,6 +41,7 @@ const WishlistCartQtySection = ({
         className="text-lg font-semibold"
         size={"lg"}
         qty={currentQty}
+        authorization={authorization!}
       />
     </>
   );

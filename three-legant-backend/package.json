@@ -3,10 +3,10 @@
   "scripts": {
     "dev": "tsx watch src/index.ts --clear-screen=false",
     "build": "node esbuild.config.js",
-    "serve": "NODE_ENV=production pm2 start dist/bundle.js --name three-legant.rcmade.me",
-    "start": "pm2 start dist/bundle.js --three-legant.rcmade.me --env production",
+    "serve": "NODE_ENV=production pm2 start dist/index.js --name three-legant.rcmade.me",
+    "start": "pm2 start dist/index.js --three-legant.rcmade.me --env production",
     "reload": "pm2 reload three-legant.rcmade.me --env production",
-    "deploy": "pnpm install && pnpm build && (pm2 show three-legant.rcmade.me > /dev/null && pm2 reload three-legant.rcmade.me || pm2 start dist/bundle.js --name three-legant.rcmade.me --env production)",
+    "deploy": "pnpm install && pnpm build && (pm2 show three-legant.rcmade.me > /dev/null && pm2 reload three-legant.rcmade.me || pm2 start dist/index.js --name three-legant.rcmade.me --env production)",
     "codegen": "bunx drizzle-kit generate  --config=./src/db/drizzle.config.ts",
     "push": "bunx drizzle-kit push  --config=./src/db/drizzle.config.ts",
     "drop": "bunx drizzle-kit drop  --config=./src/db/drizzle.config.ts",

@@ -45,7 +45,6 @@ const AddToCartButton = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pathname]);
 
-
   const handleAddToCart = async () => {
     const { data } = await axios.post<AddCartResponseT>(
       getBackendUrl(addCartApi),
@@ -57,6 +56,10 @@ const AddToCartButton = ({
         },
       },
     );
+
+    if (data?.id) {
+      onOpen();
+    }
   };
 
   return (

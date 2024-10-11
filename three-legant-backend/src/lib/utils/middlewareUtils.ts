@@ -1,6 +1,6 @@
-import { getAuthUser } from "@hono/auth-js";
 import { Context } from "hono";
 import { type Next } from "hono";
+import { getAuthUser } from "./authUtils";
 
 
 export const verifyAuth = async (

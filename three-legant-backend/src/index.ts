@@ -24,7 +24,7 @@ console.log(`Server is running on  http://localhost:${port}`);
 app.use(
   "/*",
   cors({
-    origin: "http://localhost:3000",
+    origin: ["http://localhost:3000", "https://three-legant.vercel.app"],
     // allowHeaders: ["X-Custom-Header", "Upgrade-Insecure-Requests"],
     allowMethods: ["POST", "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     // exposeHeaders: ["Content-Length", "X-Kuma-Revision"],
@@ -54,4 +54,3 @@ serve({
   fetch: routes.fetch,
   port,
 });
-

@@ -28,8 +28,9 @@ export function getTwoDaysAhead(dateString: Date): string {
   return formattedDate;
 }
 
-export function formatDateTime(date: Date): string {
-  return moment(date).format("DD/MM/YYYY, HH:mm");
+export function formatDateTime(date: string): string {
+  const d = new Date(date);
+  return moment(d).format("MMMM D, YYYY");
 }
 
 export const calculateOneYearFromNow = () => {

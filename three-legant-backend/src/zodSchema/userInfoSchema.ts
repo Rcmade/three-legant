@@ -2,6 +2,7 @@ import { db } from "@/db/db";
 // import { onlyLetters } from "../../../three-legant-frontend/src/constant/index";
 import { z } from "zod";
 import { users } from "@/db/schema";
+import { createInsertSchema } from "drizzle-zod";
 
 export const userInfoSchema = z.object({
   firstName: z
@@ -37,3 +38,7 @@ export const upsertUserSchema = z.object({
   // }),
   image: z.string().url().optional(),
 });
+
+
+
+export const userSchema = createInsertSchema(users)

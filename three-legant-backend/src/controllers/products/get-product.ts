@@ -1,38 +1,78 @@
 import { db } from "@/db/db";
-import { products } from "@/db/schema";
+import { products, users } from "@/db/schema";
 import { PaginationParams } from "@/types";
-import { and, count, eq, lte, sql } from "drizzle-orm"; // Import necessary query helpers
+import { and, count, eq, like, lte, sql } from "drizzle-orm";
 
 export const getProducts = async (
-  paginationParams: PaginationParams & { sortBy?: keyof typeof products }
+  paginationParams: PaginationParams & {
+    sortBy?: keyof typeof products;
+    category?: string;
+    priceFilter?: number;
+    userId?: string;
+  }
 ) => {
   const {
     limit = 10,
-    offset = 0,
+    page = 1,
     search = "",
     priceFilter,
     sortBy = "createdAt",
+    category,
   } = paginationParams;
 
-  const similarityThreshold = 0.3;
+  // Build the search query
   const searchQuery = search
-    ? sql`(similarity(${products.name}, ${search}) > ${similarityThreshold} OR similarity(${products.description}, ${search}) > ${similarityThreshold})`
+    ? sql`
+      (
+        to_tsvector('english', 
+          coalesce(${products.name}, '') || ' ' || 
+          coalesce(${products.categoryName}, '') || ' ' || 
+          coalesce(${products.description}, '')
+        ) @@ websearch_to_tsquery('english', ${search})
+        OR ${products.name} % ${search}
+      )
+    `
     : undefined;
 
-  // Build where clause with optional filters
-  const whereClause = and(
-    searchQuery, // Full-text search on name and description
-    priceFilter ? lte(products.price, priceFilter?.toString()) : undefined // Filter by price (<=)
-  );
-  // Fetch products with limit, offset, and sorting
+  const categoryFilter = category
+    ? like(products.categoryName, `%${category}%`)
+    : undefined;
+
+  const priceFilterQuery =
+    priceFilter !== undefined && !isNaN(priceFilter)
+      ? lte(products.price, priceFilter.toString())
+      : undefined;
+
+  const userId = paginationParams.userId
+    ? eq(products.userId, paginationParams.userId)
+    : undefined;
+
+  const filters = [
+    searchQuery,
+    categoryFilter,
+    priceFilterQuery,
+    userId,
+  ].filter(Boolean);
+  const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
   const productList = await db
-    .select()
+    .select({
+      id: products.id,
+      name: products.name,
+      description: products.description,
+      price: products.price,
+      discountedPrice: products.discountedPrice,
+      primaryImage: products.primaryImage,
+      stock: products.stock,
+      brand: products.brand,
+      categoryName: products.categoryName,
+    })
     .from(products)
     .where(whereClause)
     .limit(limit)
-    .offset(offset)
-    .orderBy((products[sortBy] || products.name) as any); // Sort by the specified field
-  // Optionally, get the total number of products for pagination metadata
+    .offset(Math.max(page - 1, 0) * limit)
+    .orderBy((products[sortBy] || products.createdAt) as any);
+
   const totalProducts = await db
     .select({ count: count() })
     .from(products)
@@ -41,13 +81,14 @@ export const getProducts = async (
   return {
     products: productList,
     pagination: {
-      total: totalProducts[0].count, // total number of products
-      limit,
-      offset,
+      total: totalProducts[0]?.count || 0,
+      limit: limit,
+      page: page,
     },
   };
 };
 
+// Fetch a single product by ID
 export const getProductById = async (id: string) => {
   const product = await db
     .select()

@@ -2,7 +2,10 @@ import React from "react";
 import ProductsWithHeadingSection from "@/components/sections/ProductsWithHeadingSection";
 import ProductCard from "@/components/cards/ProductCard";
 import axios from "axios";
-import { getBackendUrl } from "@/lib/utils/stringUtils";
+import {
+  getBackendUrl,
+  getProductNavigateString,
+} from "@/lib/utils/stringUtils";
 import { newArrival } from "@/constant/apiRoute";
 import { NewArrivalResponseT } from "@/types/apiResponse";
 
@@ -29,13 +32,17 @@ const NewArrivalsSection = async () => {
         {data?.map((product) => (
           <ProductCard
             key={product.id}
+            productId={product.id}
             imageAlt="img"
             imageSrc={product.primaryImage}
             price={product.price}
             productName={product.name}
             title={"New"}
             discountedPrice={product.discountedPrice} // rating={product.rating}
-            href={`/shop/${product.categoryName}/${product.id}`}
+            href={getProductNavigateString(
+              product.categoryName || ":",
+              product.id,
+            )}
           />
         ))}
       </ProductsWithHeadingSection>

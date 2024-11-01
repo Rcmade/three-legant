@@ -1,6 +1,8 @@
-"use client";
+import { getCategories } from "@/actions/categoryAction";
 import { categoryContent } from "@/content/categoryContent";
 import { cn } from "@/lib/utils";
+import { createQueryString } from "@/lib/utils/stringUtils";
+import { wait } from "@/lib/utils/testUtils";
 import { PageProps } from "@/types";
 import Link from "next/link";
 import React from "react";
@@ -8,28 +10,30 @@ import React from "react";
 interface ShopCategoryLinksProps
   extends React.HTMLAttributes<HTMLDivElement>,
     PageProps {}
-const ShopCategoryLinks = ({
+const ShopCategoryLinks = async ({
   className,
   params,
   searchParams,
   ...rest
 }: ShopCategoryLinksProps) => {
+  const searchParamsStr = createQueryString(searchParams);
+  const getCategoriesData = await getCategories(searchParamsStr);
+
   return (
     <div {...rest} className={cn("flex", className)}>
-      {categoryContent.map((i) => {
-        // console.log({ i, params: params.category });
+      {(getCategoriesData.categories || []).map((i) => {
         return (
           <Link
             className={cn(
               "max-w-fit border-b border-transparent hover:border-primary",
-              i === decodeURIComponent(params?.category) &&
+              i.name === decodeURIComponent(params?.category) &&
                 "border-b border-primary font-semibold",
             )}
-            href={`/shop/${i}`}
+            href={`/shop/${i.name}`}
             scroll={false}
-            key={i}
+            key={i.id}
           >
-            {i}
+            {i.name}
           </Link>
         );
       })}
@@ -38,3 +42,4 @@ const ShopCategoryLinks = ({
 };
 
 export default ShopCategoryLinks;
+

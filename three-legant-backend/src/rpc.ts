@@ -53,8 +53,16 @@ export type ProductResponseT = InferResponseType<
   typeof client.api.products.$get
 >;
 
+export type AdminProductResponseT = InferResponseType<
+  typeof client.api.admin.products.$get
+>;
+
 export type ProductDetailsResponseT = InferResponseType<
   (typeof client.api.products)["product-details"][":id"]["$get"]
+>;
+
+export type AdminProductDetailsResponseT = InferResponseType<
+  (typeof client.api.admin.products)["product-details"][":id"]["$get"]
 >;
 
 // user
@@ -82,3 +90,54 @@ export type AddWishListResponse = InferResponseType<
 export type DeleteWishListResponse = InferRequestType<
   (typeof client.api.wishlist)[":id"]["$delete"]
 >["param"];
+
+// Address
+export type AddAddressRequestT = InferRequestType<
+  (typeof client.api.address)["delivery-address"]["$post"]
+>["json"];
+
+export type AddAddressResponseT = InferResponseType<
+  (typeof client.api.address)["delivery-address"]["$post"]
+>;
+
+export type GetAddressResponseT = InferResponseType<
+  (typeof client.api.address)["addresses"]["$get"]
+>;
+
+// Shipping
+export type GetShippingMethodsResponseT = InferResponseType<
+  (typeof client.api.shipping)["get-shipping-addresses"]["$get"]
+>;
+
+// Payment
+export type CreatePaymentIntentResponseT = InferResponseType<
+  (typeof client.api.payments)["payment-intent"]["$post"]
+>;
+
+export type CreatePaymentIntentRequestT = InferRequestType<
+  (typeof client.api.payments)["payment-intent"]["$post"]
+>["json"];
+
+// Temp Orders
+export type CreateTempOrderResponseT = InferResponseType<
+  (typeof client.api)["temp-orders"]["create"]["$post"]
+>;
+
+// Orders
+
+export type GetOrderBySecretResponseT = InferResponseType<
+  (typeof client.api.orders)["order-completed"]["$get"]
+>;
+
+export type GetUserOrdersResponseT = InferResponseType<
+  (typeof client.api.orders)["$get"]
+>;
+
+export type GetOrderByIdResponseT = InferResponseType<
+  (typeof client.api.orders.id)[":orderId"]["$get"]
+>;
+
+// Categories
+export type GetCategoriesResponseT = InferResponseType<
+  (typeof client.api.category)["$get"]
+>;

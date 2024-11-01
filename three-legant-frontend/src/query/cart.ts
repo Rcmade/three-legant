@@ -1,28 +1,27 @@
 import { addCartApi } from "@/constant/apiRoute";
-import { getAxiosErrorMessage, getBackendUrl } from "@/lib/utils/stringUtils";
-import {
-  AddCartRequestT,
-  AddCartResponseT,
-  CartsResponseT,
-} from "@/types/apiResponse";
+import { getBackendUrl } from "@/lib/utils/stringUtils";
+import { HandleAddToCartT } from "@/types";
+import { AddCartResponseT } from "@/types/apiResponse";
 import axios from "axios";
-import { ReadonlyHeaders } from "next/dist/server/web/spec-extension/adapters/headers";
 
-export const addToCart = async (d: AddCartRequestT) => {
-  // console.log({d});
+export const handleAddToCart = async ({
+  productId,
+  qty,
+  authorization,
+}: HandleAddToCartT) => {
   try {
     const { data } = await axios.post<AddCartResponseT>(
       getBackendUrl(addCartApi),
-      d,
+      { productId, qty },
       {
         withCredentials: true,
+        headers: {
+          Authorization: authorization,
+        },
       },
     );
-
     return data;
   } catch (error) {
-    throw getAxiosErrorMessage(error);
+    return null;
   }
 };
-
-

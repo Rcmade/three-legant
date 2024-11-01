@@ -1,9 +1,9 @@
 import Image from "next/image";
-import AddToCartButton from "../buttons/AddToCartButton";
 import Link from "next/link";
 import RatingStarButtons from "../buttons/RatingStarButtons";
 import { cn } from "@/lib/utils";
 import { calculateDiscountPercentage } from "@/lib/utils/numberUtils";
+import AddToCartButton from "../buttons/AddToCartButton";
 
 type ProductCardProps = {
   title: string;
@@ -14,6 +14,8 @@ type ProductCardProps = {
   discountedPrice?: string | null;
   rating?: number;
   href: string;
+  productId: string;
+  authorization?: string;
 };
 
 const ProductCard: React.FC<
@@ -28,6 +30,8 @@ const ProductCard: React.FC<
   rating = 0,
   className,
   href,
+  productId,
+  authorization,
   ...rest
 }) => {
   const disPrice = discountedPrice || price;
@@ -43,32 +47,34 @@ const ProductCard: React.FC<
         className,
       )}
     >
-      <div className="relative space-y-4 overflow-hidden bg-accent p-4">
-        <div className="absolute z-10 flex flex-col gap-y-2">
+      <div className="relative flex items-center justify-center overflow-hidden bg-accent p-4">
+        <div className="absolute left-4 top-4 z-10 flex flex-col gap-y-2">
           <h1 className="max-w-fit rounded-md bg-card px-3 font-medium">
             {title}
           </h1>
           {disPercentage > 0 && (
-            <p className="rounded-md bg-secondary-green px-3 font-medium text-white">
-              {`-${disPercentage}%`}
+            <p className="rounded-md bg-secondary-green px-3 font-medium max-w-fit text-white">
+              {`-${disPercentage?.toFixed()}%`}
             </p>
           )}
         </div>
 
-        <div className="h-60">
+        <div className="flex h-64 items-center justify-center">
           <Image
             src={imageSrc}
-            className="mx-auto mt-4 min-h-full rounded-lg object-contain mix-blend-multiply dark:mix-blend-normal"
+            className="mx-auto max-h-full rounded-lg object-contain mix-blend-multiply dark:mix-blend-normal"
             width={350}
             height={350}
             alt={imageAlt}
           />
         </div>
-        {/* <AddToCartButton
-        productId=
-          className="relative z-10 opacity-0 transition-all duration-500 group-hover:opacity-100"
-          id={title}
-        /> */}
+
+        <AddToCartButton
+          productId={productId}
+          className="absolute bottom-4 z-10 max-w-[calc(100%-1.5rem)] opacity-0 transition-all duration-500 group-hover:opacity-100"
+          qty={1}
+          authorization={authorization}
+        />
       </div>
 
       <div className="space-y-2 whitespace-normal">

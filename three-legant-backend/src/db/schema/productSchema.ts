@@ -9,51 +9,65 @@ import {
   json,
   pgEnum,
   AnyPgColumn,
+  index,
 } from "drizzle-orm/pg-core";
-import { relations } from "drizzle-orm";
+import { relations, sql } from "drizzle-orm";
 import { nId } from "@/lib/utils/dbUtils";
 import { users } from "./userSchema";
-import { commonCreatedField, commonProductFields } from "./commonSchemaFields";
+import { commonCreatedField } from "./commonSchemaFields";
 
 // Table for Categories
 export const categories = pgTable("categories", {
-  id: text("id").primaryKey().$defaultFn(nId),
+  ...commonCreatedField,
+  // id: text("id").primaryKey().$defaultFn(nId),
   name: varchar("name", { length: 255 }).notNull(),
   description: text("description"),
   image: text("image"),
   parentCategoryId: text("parent_category_id"), // For sub-categories
-  ...commonCreatedField,
 });
 
 // Table for Products
-export const products = pgTable("products", {
-  id: text("id").primaryKey().$defaultFn(nId),
-  name: varchar("name", { length: 255 }).notNull(),
-  description: text("description"),
-  sku: varchar("sku", { length: 50 }).unique().notNull(), // Stock Keeping Unit
-  rating: numeric("rating", { precision: 10, scale: 2 }),
-  categoryId: text("category_id").references(() => categories.id, {
-    onDelete: "set null",
-  }),
-  categoryName: varchar("category_name", { length: 255 }),
-  userId: text("user_id")
-    .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" })
-    .notNull(),
-  isAvailable: boolean("is_available").default(true),
-  currentVariantType: varchar("variant_type", { length: 50 }),
-  variantValue: varchar("variant_value", { length: 50 }),
-  brand: varchar("brand", { length: 100 }),
-  parentId: text("parent_id").references((): AnyPgColumn => products.id, {
-    onDelete: "set null",
-  }), // Self-referencing Foreign Key
-  primaryImage: text("primary_image").notNull(),
-  stock: integer("stock").default(0).notNull(),
-  price: numeric("price", { precision: 10, scale: 2 }).notNull(),
-  discountedPrice: numeric("discounted_price", { precision: 10, scale: 2 }),
-  sortDescription: varchar("sort_description", { length: 300 }).notNull(),
-  ...commonCreatedField,
-  meta: json("meta"), // JSON for additional product-specific attributes
-});
+export const products = pgTable(
+  "products",
+  {
+    // id: text("id").primaryKey().$defaultFn(nId),
+    ...commonCreatedField,
+    name: varchar("name", { length: 255 }).notNull(),
+    description: text("description"),
+    sku: varchar("sku", { length: 50 }).unique().notNull(), // Stock Keeping Unit
+    rating: numeric("rating", { precision: 10, scale: 2 }),
+    categoryId: text("category_id").references(() => categories.id, {
+      onDelete: "set null",
+    }),
+    categoryName: varchar("category_name", { length: 255 }),
+    userId: text("user_id")
+      .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" })
+      .notNull(),
+    isAvailable: boolean("is_available").default(true),
+    currentVariantType: varchar("variant_type", { length: 50 }),
+    variantValue: varchar("variant_value", { length: 50 }),
+    brand: varchar("brand", { length: 100 }),
+    parentId: text("parent_id").references((): AnyPgColumn => products.id, {
+      onDelete: "set null",
+    }), // Self-referencing Foreign Key
+    primaryImage: text("primary_image").notNull(),
+    stock: integer("stock").default(0).notNull(),
+    price: numeric("price", { precision: 10, scale: 2 }).notNull(),
+    discountedPrice: numeric("discounted_price", { precision: 10, scale: 2 }),
+    sortDescription: varchar("sort_description", { length: 300 }).notNull(),
+    meta: json("meta"), // JSON for additional product-specific attributes
+  },
+  (table) => ({
+    nameSearchIndex: index("name_search_index").using(
+      "gin",
+      sql`to_tsvector('english', ${table.name})`
+    ),
+    categorySearchIndex: index("category_search_index").using(
+      "gin",
+      sql`to_tsvector('english', ${table.categoryName})`
+    ),
+  })
+);
 
 export const imageType = pgEnum("ImageType", [
   "BANNER",

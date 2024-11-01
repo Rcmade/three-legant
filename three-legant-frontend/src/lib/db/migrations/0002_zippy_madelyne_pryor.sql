@@ -1,1 +1,0 @@
-ALTER TABLE "oAuthProjectConfig" ADD COLUMN "image" text;

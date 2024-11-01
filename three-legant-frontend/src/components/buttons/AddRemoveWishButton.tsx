@@ -9,7 +9,7 @@ import useSWR from "swr";
 import { getAxiosErrorMessage, getBackendUrl } from "@/lib/utils/stringUtils";
 import { addWishApi, getWishlistByIdOrProductIdApi } from "@/constant/apiRoute";
 import { toast } from "sonner";
-import { useWishlistStore } from "@/hooks/useWishList";
+// import { useWishlistStore } from "@/hooks/useWishList";
 import { fetcher } from "@/lib/utils/apiUtils";
 import { AddWishListResponse } from "@/types/apiResponse";
 
@@ -35,12 +35,12 @@ const AddRemoveWishButton = React.forwardRef<
   ButtonProps & ButtonIconProps & AddRemoveWishButtonProps
 >(({ className, children, productId, ...rest }, ref) => {
   const [isLoading, setIsLoading] = useState(false);
-  const {
-    addToWishlist,
-    currentWishlistItem,
-    setCurrentWishlistItem,
-    removeFromWishlist,
-  } = useWishlistStore();
+  // const {
+  //   addToWishlist,
+  //   currentWishlistItem,
+  //   setCurrentWishlistItem,
+  //   removeFromWishlist,
+  // } = useWishlistStore();
 
   // Fetcher function for SWR
 
@@ -71,8 +71,8 @@ const AddRemoveWishButton = React.forwardRef<
 
       // Update the Zustand store and SWR cache
       if ("productId" in data) {
-        setCurrentWishlistItem({ productId: data.productId });
-        addToWishlist({ productId: data.productId });
+        // setCurrentWishlistItem({ productId: data.productId });
+        // addToWishlist({ productId: data.productId });
         toast.success("Product added to your wishlist!");
 
         // Mutate SWR to keep the cache in sync with the new data
@@ -104,8 +104,8 @@ const AddRemoveWishButton = React.forwardRef<
       );
 
       // Update Zustand store and SWR cache
-      removeFromWishlist(productId);
-      setCurrentWishlistItem(null);
+      // removeFromWishlist(productId);
+      // setCurrentWishlistItem(null);
       toast.success("Product removed from your wishlist!");
 
       // Revalidate SWR cache after removal
@@ -120,11 +120,11 @@ const AddRemoveWishButton = React.forwardRef<
 
   useEffect(() => {
     // Set the current wishlist item if data is fetched
-    if (data && "productId" in data && data.productId && !currentWishlistItem) {
-      setCurrentWishlistItem({
-        productId: data.productId,
-      });
-    }
+    // if (data && "productId" in data && data.productId && !currentWishlistItem) {
+    //   // setCurrentWishlistItem({
+    //   //   productId: data.productId,
+    //   // });
+    // }
 
     return () => {};
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -132,18 +132,18 @@ const AddRemoveWishButton = React.forwardRef<
 
   return (
     <Button
-      variant={currentWishlistItem ? "destructive-outline" : "outline"}
+      // variant={currentWishlistItem ? "destructive-outline" : "outline"}
       disabled={isLoading}
       size={"lg"}
       className={cn("flex-1 gap-6", className)}
       {...rest}
-      onClick={currentWishlistItem ? removeWishList : handleWishList}
+      // onClick={currentWishlistItem ? removeWishList : handleWishList}
     >
       {children ? (
         children
       ) : (
         <>
-          {currentWishlistItem ? (
+          {/* {currentWishlistItem ? (
             <>
               <HeartOff /> Remove from Wishlist
             </>
@@ -151,7 +151,7 @@ const AddRemoveWishButton = React.forwardRef<
             <>
               <Heart /> Wishlist
             </>
-          )}
+          )} */}
         </>
       )}
     </Button>

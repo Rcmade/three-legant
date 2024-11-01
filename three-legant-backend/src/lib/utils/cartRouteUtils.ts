@@ -8,7 +8,7 @@ export const cartRouteUtils = async (
   const cartProducts = await getAllCartProducts(userId, {
     ...params,
     limit: limit,
-    offset: +(params.offset || 0),
+    page: +(params.page || 1),
     noLimit: !!params?.noLimit,
     priceFilter: +params.priceFilter,
     sortBy: params.sortBy as any,

@@ -6,7 +6,7 @@ import ProductDetailsCarousel from "@/components/carousels/ProductDetailsCarouse
 import RatingStarButtons from "@/components/buttons/RatingStarButtons";
 import { ChevronRight } from "lucide-react";
 import Image from "next/image";
-import AdditionInfo from "@/components/sections/product-details/AdditionInfo";
+import AdditionalInfo from "@/components/sections/product-details/AdditionalInfo";
 import Qna from "@/components/sections/product-details/Qna";
 import Reviews from "@/components/sections/product-details/Reviews";
 import ProductTabs from "@/components/sections/product-details/ProductTabs";
@@ -16,9 +16,10 @@ import { getBackendUrl } from "@/lib/utils/stringUtils";
 import Link from "next/link";
 import { ProductDetailsResponseT } from "@/types/apiResponse";
 import WishlistCartQtySection from "@/components/sections/product-details/WishlistCartQtySection";
+import { getProductDetails } from "@/actions/productAction";
 
 const tabs = {
-  "Additional Info": <AdditionInfo />,
+  "Additional Info": <AdditionalInfo />,
   Questions: <Qna />,
   Reviews: <Reviews />,
 };
@@ -27,21 +28,9 @@ export const dynamic = "force-static";
 export const revalidate = 3600;
 
 const page = async ({ params }: PageProps) => {
-  const getProductDetails = async () => {
-    try {
-      const { data } = await axios.get<ProductDetailsResponseT>(
-        getBackendUrl(`${productDetails}/${params.product}`),
-      );
-      if (data) {
-        return data;
-      }
-      return null;
-    } catch (error: any) {
-      return null;
-    }
-  };
-
-  const data: ProductDetailsResponseT | null = await getProductDetails();
+  const data: ProductDetailsResponseT | null = await getProductDetails(
+    params.product,
+  );
   const breadcrumb =
     (data &&
       "product" in data &&
@@ -163,7 +152,7 @@ const page = async ({ params }: PageProps) => {
         </div>
       </div>
 
-      <ProductTabs />
+      <ProductTabs {...data?.product} />
     </>
   ) : (
     <h1 className="text-center text-lg">No Product Found</h1>

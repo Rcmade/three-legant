@@ -70,14 +70,16 @@ function generateBanners(count) {
   return banners;
 }
 
-// Generate 50 random banners
-const randomBanners = generateBanners(50);
+export const genBanners = (num = 50) => {
+  // Generate 50 random banners
+  const randomBanners = generateBanners(num);
 
-// Write the banners to a JSON file
-fs.writeFileSync(
-  "data/banners.json",
-  JSON.stringify(randomBanners, null, 2),
-  "utf-8"
-);
+  // Write the banners to a JSON file
+  fs.writeFileSync(
+    "data/banners.json",
+    JSON.stringify(randomBanners, null, 2),
+    "utf-8"
+  );
+};
 
 console.log("Random banners data generated and saved to banners.json");

@@ -1,7 +1,6 @@
 import { zValidator } from "@hono/zod-validator";
 import { upsertUser } from "@/controllers/user/upsertUser";
 import { Hono } from "hono";
-import { upsertUserSchema } from "@/zodSchema/userInfoSchema";
 import { verifyAuth } from "@/lib/utils/middlewareUtils";
 import { userBasicInfo } from "@/controllers/user/userBasicInfo";
 

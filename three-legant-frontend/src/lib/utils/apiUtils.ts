@@ -1,10 +1,10 @@
-export const fetcher = async (url: string, req?: RequestInit) => {
+export const fetcher = async (url: string, req?: RequestInit | null) => {
   const res = await fetch(url, {
-    ...req,
     credentials: "include",
     next: {
       revalidate: 30,
     },
+    ...req,
   });
 
   if (!res.ok) {

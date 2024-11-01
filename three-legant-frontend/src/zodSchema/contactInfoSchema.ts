@@ -1,7 +1,7 @@
 import { onlyLetters } from "@/constant";
 import { z } from "zod";
 
-export const contactInfoSchema = z.object({
+export const contactSchema = {
   firstName: z
     .string()
     .min(1, { message: "First name is required" })
@@ -25,4 +25,5 @@ export const contactInfoSchema = z.object({
     .min(10, { message: "Phone number must be at least 10 digits" })
     .max(15, { message: "Phone number cannot exceed 15 digits" })
     .regex(/^[0-9]+$/, { message: "Phone number should only contain numbers" }),
-});
+};
+export const contactInfoSchema = z.object(contactSchema);

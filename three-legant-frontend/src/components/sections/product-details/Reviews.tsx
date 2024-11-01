@@ -10,8 +10,11 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ProductCommonAdditionalInfoT } from "@/types";
 
-const Reviews = () => {
+interface ReviewsProps extends Partial<ProductCommonAdditionalInfoT> {}
+
+const Reviews = ({}: ReviewsProps) => {
   return (
     <div className="space-y-6">
       <h1 className="text-3xl font-medium text-primary">Customer Reviews</h1>
@@ -42,7 +45,7 @@ const Reviews = () => {
         </Select>
       </div>
 
-      <div className="grid gap-4 grid-cols-[8rem_1fr] grid-rows-1">
+      <div className="grid grid-cols-[8rem_1fr] grid-rows-1 gap-4">
         <Avatar className="row-start-1 row-end-3 h-16 w-16 max-w-fit">
           <AvatarImage src="https://github.com/shadcn.png" />
           <AvatarFallback>CN</AvatarFallback>
@@ -57,7 +60,7 @@ const Reviews = () => {
           atque corrupt et quas molestias excepturi sint non provident.
         </p>
 
-        <div className="flex gap-4 w-full col-start-1 md:col-start-2 col-end-3  md:justify-normal justify-center" >
+        <div className="col-start-1 col-end-3 flex w-full justify-center gap-4 md:col-start-2 md:justify-normal">
           <span>Like</span>
           <span>Replay</span>
         </div>

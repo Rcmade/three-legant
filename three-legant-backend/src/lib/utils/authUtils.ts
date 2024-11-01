@@ -84,7 +84,6 @@ export async function getAuthUser(c: Context): Promise<AuthUser | null> {
     setEnvDefaults(ctxEnv, config)
     const authReq = await reqWithEnvUrl(c.req.raw, ctxEnv.AUTH_URL)
     const origin = new URL(authReq.url).origin
-    console.log(c.req.header());
     const request = new Request(`${origin}${config.basePath}/session`, {
         headers: { cookie: (c.req.header('authorization') || c.req.header('cookie')) ?? '' },
     })

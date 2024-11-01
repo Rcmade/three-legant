@@ -12,10 +12,10 @@ export const getNewARrival = async () => {
       primaryImage: products.primaryImage,
       stock: products.stock,
       brand: products.brand,
-      categoryName: categories.name, // Joining category name
+      categoryName: products.categoryName,
     })
     .from(products)
-    .innerJoin(categories, eq(products.categoryId, categories.id)) // Joining products with categories table
+    // .innerJoin(categories, eq(products.categoryId, categories.id)) // Joining products with categories table
     .where(
       and(
         eq(products.isAvailable, true), // Product is available

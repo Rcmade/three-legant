@@ -203,8 +203,8 @@ const generateRandomData = async (num) => {
 };
 
 // Function to save generated data to a JSON file
-const getD = async () => {
-  const { categories, products, productImages } = await generateRandomData(20);
+export const genProductData = async (num = 500) => {
+  const { categories, products, productImages } = await generateRandomData(num);
 
   fs.writeFileSync(
     "data/productData.json",
@@ -223,4 +223,4 @@ const getD = async () => {
 };
 
 // Call the function to generate and save the data
-getD();
+// getD();

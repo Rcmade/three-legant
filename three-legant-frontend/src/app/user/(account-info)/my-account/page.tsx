@@ -1,11 +1,15 @@
-import AccountInfoHeading from "@/components/heading/AccountInfoHeading";
+import FormCardWrapper from "@/components/layout/FormCardWrapper";
 import React from "react";
+import AccountDetailsForm from "./_AccountDetailsForm";
 
 const page = () => {
-  return <div className="">
-    <h1 className="text-2xl font-semibold">Account Details</h1>
-    
-  </div>;
+  return (
+    <div className="">
+      <FormCardWrapper className="border-0" title="Account Details">
+        <AccountDetailsForm />
+      </FormCardWrapper>
+    </div>
+  );
 };
 
 export default page;

@@ -1,3 +1,4 @@
+import { nId } from "@/lib/utils/dbUtils";
 import {
   integer,
   numeric,
@@ -8,6 +9,7 @@ import {
 
 export const commonCreatedField = {
   createdAt: timestamp("created_at").defaultNow().notNull(),
+  id: text("id").primaryKey().$defaultFn(nId),
   updatedAt: timestamp("updated_at")
     .notNull()
     .$onUpdate(() => new Date())
@@ -21,3 +23,4 @@ export const commonProductFields = {
   discountedPrice: numeric("discounted_price", { precision: 10, scale: 2 }),
   sortDescription: varchar("sort_description", { length: 300 }).notNull(),
 };
+

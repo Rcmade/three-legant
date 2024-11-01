@@ -44,6 +44,7 @@ export const getProductDetails = async (id: string) => {
           name: sibling.name,
           primaryImage: sibling.primaryImage,
           stock: sibling.stock,
+          sku: sibling.sku,
           price: sibling.price,
           discountedPrice: sibling.discountedPrice,
           variantValue: sibling.variantValue,

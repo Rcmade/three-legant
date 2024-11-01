@@ -4,7 +4,6 @@ import axios from "axios";
 import { getBackendUrl } from "@/lib/utils/stringUtils";
 import { upsertUserApi } from "@/constant/apiRoute";
 import { UpsertUserResponseT } from "@/types/apiResponse";
-import { cookies } from "next/headers";
 export const {
   handlers: { GET, POST },
   auth,
@@ -21,14 +20,13 @@ export const {
   },
   callbacks: {
     async signIn({ account, user, ...rest }) {
-      if (!user?.email || !user?.name) return true;
+      if (!user?.email || !user?.name) return false;
 
       const formateUser = {
         email: user.email!,
         name: user.name!,
         image: user.image!,
       };
-
       const { data } = await axios.post<UpsertUserResponseT>(
         getBackendUrl(upsertUserApi),
         formateUser,
@@ -41,6 +39,15 @@ export const {
       user.name = data.name || user.name;
       user.image = data.image || user.image;
       user.role = data.role || user.role;
+
+      console.dir(
+        { signIn: { account, user, rest } },
+        {
+          depth: Infinity,
+          colors: true,
+        },
+      );
+
       return true;
     },
     async session({ session, token, ...rest }) {
@@ -52,14 +59,24 @@ export const {
       }
 
       if (session.user) {
-        session.user.email = token.email as string;
-        session.user.name = token.name as string;
-        session.user.isOAuth = token.isOAuth as boolean;
+        session.user.email = token?.email as string;
+        session.user.name = token?.name as string;
+        session.user.isOAuth = token?.isOAuth as boolean;
       }
+      session.user.role = token.role as any;
       return session;
     },
-    async jwt({ token, ...rest }) {
-      // if (!token.sub) return token;
+    async jwt({ token, trigger, user, account, ...rest }) {
+      if (!token.email) return token;
+
+      if (trigger === "signIn" || trigger === "update") {
+        if (user?.role) {
+          token.role = user?.role as any;
+        }
+      }
+      // token.email = user?.email as string;
+      // token.name = user?.name as string;
+      // token.role = user?.role as any;
       return token;
     },
   },
@@ -68,7 +85,6 @@ export const {
     strategy: "jwt",
   },
 
-  
   ...authProvidersConfig,
 
   // cookies: {

@@ -44,17 +44,16 @@ export const getBackendUrl = (apiRoute: string) => {
 
 export const getFrontedApiUrl = (route: string) => {
   return `${process.env.NEXT_PUBLIC_URL}${route?.startsWith("/") ? route : `/${route}`}`;
-
-}
+};
 
 export function getAxiosErrorMessage(error: any): { error: string } {
-  const isObj = typeof error.response?.data === "object";
+  const isObj = typeof error?.response?.data === "object";
   // Check if it's an Axios error
   if (axios.isAxiosError(error)) {
     const errStr = String(
       error.response?.data?.error ||
-      error.response?.data?.message ||
-      error.response?.data,
+        error.response?.data?.message ||
+        error.response?.data,
     );
     const err = {
       ...(isObj ? error.response?.data : {}),
@@ -62,15 +61,32 @@ export function getAxiosErrorMessage(error: any): { error: string } {
     };
     return err;
   }
+  console.log({ error });
 
   return {
     error: String(error?.error || "An error occurred"),
   };
 }
 
-
 export function buildCookieString(cookies: Record<string, string>): string {
   return Object.entries(cookies)
     .map(([name, value]) => `${name}=${encodeURIComponent(value)}`)
     .join("; ");
 }
+
+export const getProductNavigateString = (
+  categoryName: string,
+  productId: string,
+) => {
+  return `/shop/${categoryName}/${productId}`;
+};
+
+export const getAdminProductNavigateString = (productId: string) => {
+  return `/admin/dashboard/products/${productId}`;
+};
+
+export const getInitials = (name: string | undefined) => {
+  if (!name) return "U"; // Default fallback for missing names
+  const [firstName, lastName] = name.trim().split(" ");
+  return `${firstName?.[0] ?? ""}${lastName?.[0] ?? ""}`.toUpperCase();
+};

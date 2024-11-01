@@ -1,4 +1,6 @@
 "use client";
+import CartProductSection from "@/components/sections/CartProductSection";
+import CartSummaryCardSuspense from "@/components/suspense/CartSummaryCardSuspense";
 import { CartsResponseT } from "@/types/apiResponse";
 import React, {  } from "react";
 
@@ -9,8 +11,8 @@ const CartWithSummary = ({ cart }: CartWithSummaryProps) => {
   return (
     cart && (
       <>
-        {/* <CartProductSection cartData={data} />
-        <CartSummaryCard cartData={data} /> */}
+        <CartProductSection cartData={cart} />
+        <CartSummaryCardSuspense cartData={cart} />
       </>
     )
   );

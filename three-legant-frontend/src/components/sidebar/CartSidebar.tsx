@@ -5,13 +5,11 @@ import {
   SheetContent,
   SheetDescription,
   SheetHeader,
-SheetTitle,
+  SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { useCartSidebar } from "@/hooks/useCartSidebar";
 import CartProductCard from "../cards/CartProductCard";
-import { useQuery } from "@tanstack/react-query";
-// import useCartAndSummaryData from "@/hooks/useCartAndSummaryData";
 import { getAllCartProductApi } from "@/constant/apiRoute";
 import { getAllCart } from "@/actions/cartAction";
 import { CartsResponseT } from "@/types/apiResponse";
@@ -20,14 +18,20 @@ import { fetcher } from "@/lib/utils/apiUtils";
 import { getBackendUrl } from "@/lib/utils/stringUtils";
 import { Button } from "../ui/button";
 import Link from "next/link";
+import { useAuthorization } from "@/hooks/useAuthorization";
 const CartSidebar = () => {
-  const { isOpen, onClose } = useCartSidebar();
-  const { data } = useSWR<CartsResponseT>(
+  const { isOpen, onClose, onOpen } = useCartSidebar();
+  const { authorization } = useAuthorization();
+  const { data, mutate } = useSWR<CartsResponseT>(
     isOpen && getBackendUrl(getAllCartProductApi),
-    fetcher,
+    (url: string) =>
+      fetcher(url, {
+        headers: {
+          Authorization: authorization!,
+        },
+      }),
   );
 
-  // console.log({data});
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="px-0 sm:max-w-lg">
@@ -52,7 +56,7 @@ const CartSidebar = () => {
                 discountedPrice={+(i.discountedPrice || i.price)}
                 stock={i.stock}
                 qty={i.qty}
-                // onRemove={() => console.log("Remove product")}
+                category={i.category || undefined}
               />
             ))}
           </div>
@@ -68,7 +72,7 @@ const CartSidebar = () => {
             </div>
 
             <Button onClick={onClose} asChild className="w-full">
-              <Link href="/user/checkout">Checkout</Link>
+              <Link href="/user/cart">Checkout</Link>
             </Button>
 
             <Link

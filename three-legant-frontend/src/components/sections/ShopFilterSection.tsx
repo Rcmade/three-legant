@@ -6,6 +6,7 @@ import PriceLinkCheckbox from "@/components/checkbox/PriceLinkCheckbox";
 import { cn } from "@/lib/utils";
 import { Loader } from "lucide-react";
 import { PageProps } from "@/types";
+import SidebarCategoryListSkeleton from "@/components/skeleton/SidebarCategoryList";
 
 interface ShopFilterSectionProps
   extends React.HTMLAttributes<HTMLDivElement>,
@@ -26,8 +27,8 @@ const ShopFilterSection = ({
         <FilterIcon /> Filter
       </Button>
       <div className="my-8 space-y-4 px-4">
-        <h3 className="text-lg font-medium">Price</h3>
-        <Suspense fallback={<Loader className="animate-spin" />}>
+        <h3 className="text-lg font-medium">Category</h3>
+        <Suspense fallback={<SidebarCategoryListSkeleton />}>
           <ShopCategoryLinks
             params={params}
             searchParams={searchParams}
@@ -35,10 +36,10 @@ const ShopFilterSection = ({
           />
         </Suspense>
       </div>
-      <div className="my-8 space-y-4 px-4">
-        <h3 className="text-lg font-medium">Category</h3>
+      {/* <div className="my-8 space-y-4 px-4">
+        <h3 className="text-lg font-medium">Price</h3>
         <PriceLinkCheckbox baseId={baseId} className="flex-col gap-4" />
-      </div>
+      </div> */}
     </div>
   );
 };

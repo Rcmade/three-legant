@@ -27,12 +27,11 @@ const CartProductSection = ({ cartData }: CartProductSectionProps) => {
             imageUrl={i.primaryImage}
             altText={i.name}
             productName={i.name}
-            // productColor="Black"
             originalPrice={+i.price}
             discountedPrice={+(i.discountedPrice || i.price)}
             stock={i.stock}
             qty={i.qty}
-            // onRemove={() => console.log("Remove product")}
+            category={i.category || undefined}
           />
         ))}
       </div>
@@ -44,7 +43,11 @@ export const GridFive = ({
   children,
   className,
 }: Children & { className?: string }) => {
-  return <div className={cn("grid grid-cols-5", className)}>{children}</div>;
+  return (
+    <div className={cn("grid auto-rows-max grid-cols-5", className)}>
+      {children}
+    </div>
+  );
 };
 
 export default CartProductSection;

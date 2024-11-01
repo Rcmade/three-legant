@@ -1,8 +1,8 @@
 import { onlyLetters } from "@/constant/index";
 import { z } from "zod";
+import { contactSchema } from "./contactInfoSchema";
 
-// Zod Schema
-export const addressSchema = z.object({
+export const addressSchema = {
   street: z
     .string()
     .min(1, { message: "Street is required" })
@@ -37,4 +37,11 @@ export const addressSchema = z.object({
     .regex(/^[0-9A-Za-z]+$/, {
       message: "Zip code should only contain letters and numbers",
     }),
+};
+export const addressFormSchema = z.object(addressSchema);
+
+export const userAddressSchema = z.object({
+  ...addressSchema,
+  ...contactSchema,
+  id: z.string().optional(),
 });

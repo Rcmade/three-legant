@@ -4,14 +4,12 @@ import { Button } from "../ui/button";
 import { X } from "lucide-react";
 import { revalidateAllCart } from "@/actions/cartAction";
 import axios from "axios";
-import { getAxiosErrorMessage, getBackendUrl } from "@/lib/utils/stringUtils";
+import { getBackendUrl } from "@/lib/utils/stringUtils";
 import { deleteCartApi, getAllCartProductApi } from "@/constant/apiRoute";
-import { CartsResponseT, DeleteCartResponseT } from "@/types/apiResponse";
-import { toast } from "sonner";
-import { useQueryClient } from "@tanstack/react-query";
+import { DeleteCartResponseT } from "@/types/apiResponse";
 import { useCartSidebar } from "@/hooks/useCartSidebar";
-import { CartResponseT } from "@/types/apiTypes/addToCardTypes";
 import { useSWRConfig } from "swr";
+import { useAuthorization } from "@/hooks/useAuthorization";
 
 interface CartRemoveButtonProps {
   cartOrProductId: string;
@@ -19,7 +17,7 @@ interface CartRemoveButtonProps {
 const CartRemoveButton = ({ cartOrProductId }: CartRemoveButtonProps) => {
   const isOpen = useCartSidebar((s) => s.isOpen);
   const { mutate } = useSWRConfig();
-
+  const { authorization } = useAuthorization();
 
   const handleRemove = async () => {
     try {
@@ -27,6 +25,9 @@ const CartRemoveButton = ({ cartOrProductId }: CartRemoveButtonProps) => {
         getBackendUrl(deleteCartApi + cartOrProductId),
         {
           withCredentials: true,
+          headers: {
+            Authorization: authorization,
+          },
         },
       );
 

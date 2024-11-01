@@ -1,426 +1,725 @@
-import { and, eq, gte, or } from "drizzle-orm/expressions";
+import Stripe from "stripe";
 import { db } from "@/db/db";
-import { productImages, products } from "@/db/schema";
-import { SubImage } from "@/types";
-import { alias } from "drizzle-orm/pg-core";
+import { eq, and, sql, or } from "drizzle-orm";
+import {
+  orders,
+  tempOrders,
+  orderItems,
+  tempOrderItems,
+} from "@/db/schema/orderSchema";
+import { UserCart } from "@/db/schema/cartSchema";
+import { products, inventoryLogs } from "@/db/schema/productSchema";
 
-export const getProductDetails = async (productId: string) => {
-  const parent = alias(products, "parent");
+const stripeCon = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
-  const productData = await db
+export const productPaymentSucceeded = async (text: string, sig: string) => {
+  try {
+    // Verify and construct the Stripe event
+    const event = stripeCon.webhooks.constructEvent(
+      text,
+      sig,
+      process.env.STRIPE_WEBHOOK_SECRET!
+    );
+
+    if (event.type === "payment_intent.succeeded") {
+      const paymentIntent = event.data.object;
+      // const orderId = paymentIntent.metadata.orderId;
+      const clientSecretStr = String(event.data.object.client_secret);
+
+
+      // if (!orderId) {
+      //   console.error("Order ID missing in payment metadata.");
+      //   return { error: "Order ID missing" };
+      // }
+
+
+      await db.transaction(async (trx) => {
+        const tempOrder = await trx
+          .select()
+          .from(tempOrders)
+          .where(eq(tempOrders.clientSecret, clientSecretStr))
+          .limit(1);
+
+        if (!tempOrder.length) {
+          console.error(`No temporary order found for ID: ${orderId}`);
+          throw new Error("Temp order not found");
+        }
+
+        const {
+          userId,
+          totalAmount,
+          shippingMethod,
+          clientSecret,
+          userShippingAddress,
+        } = tempOrder[0];
+
+        const [newOrder] = await trx
+          .insert(orders)
+          .values({
+            userId,
+            totalAmount,
+            shippingMethod,
+            clientSecret,
+            userShippingAddress,
+            status: "paid",
+          })
+          .returning({ id: orders.id });
+
+        const newOrderId = newOrder.id;
+
+        const tempOrderItemsData = await trx
+          .select()
+          .from(tempOrderItems)
+          .where(eq(tempOrderItems.orderId, orderId));
+
+        if (!tempOrderItemsData.length) {
+          console.warn(`No items found for temporary order ${orderId}`);
+        }
+
+        const finalOrderItems = tempOrderItemsData.map((item) => ({
+          orderId: newOrderId,
+          productId: item.productId,
+          name: item.name,
+          qty: item.qty,
+          price: item.price,
+          primaryImage: item.primaryImage,
+        }));
+
+        // Insert all order items in a single query
+        await trx.insert(orderItems).values(finalOrderItems);
+
+        // Prepare bulk updates for stock and inventory logs
+        const stockUpdates = [];
+        const inventoryLogsData = [];
+        const userCartDeletions = [];
+
+        for (const item of tempOrderItemsData) {
+          const { productId, qty } = item;
+
+          // Collect stock updates and inventory logs
+          stockUpdates.push({ productId, qty });
+          inventoryLogsData.push({
+            productId,
+            userId,
+            changeType: "SALE",
+            quantity: -qty,
+          });
+          userCartDeletions.push({ productId, userId });
+        }
+
+        // Bulk update product stock
+        // await trx
+        //   .update(products)
+        //   .set({
+        //     stock: sql`${products.stock} - ${sql.join(
+        //       stockUpdates.map((item) => sql`${item.qty}`),
+        //       " + "
+        //     )}`,
+        //   })
+        //   .where(
+        //     or(
+        //       ...stockUpdates.map(({ productId }) => eq(products.id, productId))
+        //     )
+        //   );
+
+        for (const { productId, qty } of stockUpdates) {
+          await trx
+            .update(products)
+            .set({
+              stock: sql`${products.stock} - ${qty}`,
+            })
+            .where(eq(products.id, productId));
+        }
+
+        // Bulk insert inventory logs
+        await trx.insert(inventoryLogs).values(inventoryLogsData);
+
+        // Bulk delete from UserCart
+        await trx
+          .delete(UserCart)
+          .where(
+            or(
+              ...userCartDeletions.map(({ productId, userId }) =>
+                and(
+                  eq(UserCart.productId, productId),
+                  eq(UserCart.userId, userId)
+                )
+              )
+            )
+          );
+
+        // Delete temp order and items in a single operation
+        await trx
+          .delete(tempOrderItems)
+          .where(eq(tempOrderItems.orderId, orderId));
+        await trx.delete(tempOrders).where(eq(tempOrders.id, orderId));
+
+      });
+    } else {
+      console.warn(`Unhandled event type: ${event.type}`);
+    }
+
+    return { received: true };
+  } catch (error) {
+    console.error("Error handling Stripe webhook:", error);
+    return { error: "Webhook handling failed" };
+  }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// import stripe from "stripe";
+// import { db } from "@/db/db";
+// import { shippingAddress } from "@/db/schema";
+// import { eq } from "drizzle-orm";
+// import { getAllCartProducts } from "../user/cart";
+// import { getAddresses } from "../address";
+// import { PaymentIntentRequestT } from "@/types";
+
+// export const createPaymentIntent = async (
+//   userId: string,
+//   data: PaymentIntentRequestT,
+//   verifyOnly = false
+// ) => {
+//   const [shippingMethod] = await db
+//     .select()
+//     .from(shippingAddress)
+//     .where(eq(shippingAddress.id, data.shippingMethodId))
+//     .limit(1)
+//     .execute();
+
+//   if (!shippingMethod) {
+//     throw new Error("Invalid shipping method.");
+//   }
+
+//   const userCart = await getAllCartProducts(userId, { noLimit: true });
+
+//   if (userCart.products.length === 0) {
+//     throw new Error("Cart is empty.");
+//   }
+
+//   const totalAmount = userCart.total + +(shippingMethod.shippingCost || 0);
+//   const [userShippingAddress] = await getAddresses(userId, true);
+
+//   if (!userShippingAddress) {
+//     throw new Error("User shipping address not found.");
+//   }
+
+//   const totalAmountInCents = Math.round(totalAmount * 100);
+
+//   if (verifyOnly) {
+//     return {
+//       cart: userCart,
+//       totalAmount: totalAmountInCents,
+//       clientSecret: null,
+//     };
+//   }
+
+//   const stripeSecretKey = process.env.STRIPE_SECRET_KEY;
+//   if (!stripeSecretKey) {
+//     throw new Error("Stripe secret key is not configured.");
+//   }
+
+//   const stripeCon = new stripe(stripeSecretKey);
+
+//   const productDescription = userCart.products
+//     .map((item) => `${item.qty}x ${item.name}`)
+//     .join(", ");
+
+//   let paymentIntent: stripe.PaymentIntent;
+
+//   const shipping: stripe.PaymentIntentCreateParams.Shipping = {
+//     name: `${userShippingAddress.firstName} ${userShippingAddress.lastName}`,
+//     phone: userShippingAddress.phone || "N/A",
+//     carrier: shippingMethod.title || "Standard Shipping",
+//     address: {
+//       line1: userShippingAddress.street,
+//       postal_code: userShippingAddress.zipCode,
+//       city: userShippingAddress.city,
+//       state: userShippingAddress.state,
+//       country: userShippingAddress.country,
+//     },
+//   };
+//   const metadata: stripe.MetadataParam = {
+//     userId,
+//     shippingMethod: shippingMethod.title,
+//     productCount: userCart.products.length,
+//   };
+
+//   if (data.clientSecret) {
+//     // Retrieve and update the existing payment intent
+//     try {
+//       const intentId = data.clientSecret.split("_secret_")[0]; // Extract intent ID from the client secret
+//       paymentIntent = await stripeCon.paymentIntents.update(intentId, {
+//         amount: totalAmountInCents,
+//         description: productDescription,
+//         shipping,
+//         metadata,
+//       });
+//     } catch (error: any) {
+//       throw new Error(`Failed to update payment intent: ${error.message}`);
+//     }
+//   } else {
+//     // Create a new payment intent if no client secret is provided
+//     paymentIntent = await stripeCon.paymentIntents.create({
+//       amount: totalAmountInCents,
+//       currency: "usd",
+//       description: productDescription,
+//       automatic_payment_methods: { enabled: true },
+//       shipping,
+//       metadata,
+//     });
+
+//   }
+
+//   return {
+//     clientSecret: paymentIntent.client_secret,
+//   };
+// };
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+"use client";
+import { useCallback, useEffect, useState } from "react";
+import {
+  Elements,
+  useStripe,
+  useElements,
+  PaymentElement,
+} from "@stripe/react-stripe-js";
+import { loadStripe, StripeElementsOptions } from "@stripe/stripe-js";
+import type {
+  CartsResponseT,
+  CreatePaymentIntentRequestT,
+  CreatePaymentIntentResponseT,
+  CreateTempOrderResponseT,
+  GetAddressResponseT,
+  GetShippingMethodsResponseT,
+} from "@/types/apiResponse";
+import { Button } from "@/components/ui/button";
+import axios from "axios";
+import { getAxiosErrorMessage, getBackendUrl } from "@/lib/utils/stringUtils";
+import {
+  createPaymentIntentApi,
+  createTempOrderApi,
+} from "@/constant/apiRoute";
+import { useAuthorization } from "@/hooks/useAuthorization";
+import FormResultMessage from "../alerts/FormResultMessage";
+import { wait } from "@/lib/utils/testUtils";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { intentSecretParams, shippingSearchParams } from "@/constant";
+
+const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLIC_KEY!);
+
+interface PaymentFormProps {
+  contactInfo: GetAddressResponseT[0];
+  currentShippingType?: GetShippingMethodsResponseT[0];
+  cart: CartsResponseT | undefined;
+}
+const PaymentForm = ({
+  contactInfo,
+  currentShippingType,
+  cart,
+}: PaymentFormProps) => {
+  const searchParams = useSearchParams();
+  const [clientSecret, setClientSecret] = useState<string | null>(
+    searchParams.get(intentSecretParams),
+  );
+  const [error, setError] = useState<string | null>(null);
+  const { authorization } = useAuthorization();
+  const pathname = usePathname();
+
+  const createPaymentIntent = useCallback(async () => {
+    try {
+      const { data } = await axios.post<CreatePaymentIntentResponseT>(
+        getBackendUrl(createPaymentIntentApi),
+        {
+          shippingMethodId: currentShippingType?.id,
+          clientSecret: clientSecret || undefined,
+        } as CreatePaymentIntentRequestT,
+        {
+          withCredentials: true,
+          headers: { Authorization: authorization },
+        },
+      );
+      const url = new URL(window.location.href);
+      // Set or update the search param without rerendering to prevent secret changes
+      url.searchParams.set(intentSecretParams, data.clientSecret!);
+      window.history.replaceState(null, "", url);
+      setClientSecret(data.clientSecret);
+    } catch (err: any) {
+      console.log({ err });
+      setError(getAxiosErrorMessage(error).error || "Something went wrong.");
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentShippingType?.id, authorization]);
+
+  useEffect(() => {
+    createPaymentIntent();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart]);
+
+  const options: StripeElementsOptions = {
+    clientSecret: clientSecret!,
+    appearance: { theme: "stripe" },
+  };
+
+  return (
+    <div>
+      {error && <FormResultMessage message={error} variant="destructive" />}
+      {clientSecret && !error ? (
+        <Elements key={clientSecret} stripe={stripePromise} options={options}>
+          <CheckoutForm
+            currentShippingType={currentShippingType}
+            clientSecret={clientSecret}
+            contactInfo={contactInfo}
+            cart={cart}
+          />
+        </Elements>
+      ) : (
+        <p>Loading payment form...</p>
+      )}
+    </div>
+  );
+};
+
+const CheckoutForm = ({
+  contactInfo,
+  clientSecret,
+  currentShippingType,
+}: PaymentFormProps & { clientSecret: string }) => {
+  const stripe = useStripe();
+  const elements = useElements();
+  const [loading, setLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const { authorization } = useAuthorization();
+
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    try {
+      if (!stripe || !elements) return;
+      setLoading(true);
+      setPaymentError(null);
+
+      if (!authorization) {
+        setPaymentError("Please sign in to complete the payment");
+        return;
+      }
+
+      const tempOrderData = {
+        shippingId: contactInfo.id,
+        clientSecret,
+        shippingMethodId: currentShippingType?.id,
+      };
+
+      const validate = await elements.submit();
+      if (validate.error) {
+        return;
+      }
+
+      // 1. Create Temporary Order
+      const { data: tempOrderResponse } =
+        await axios.post<CreateTempOrderResponseT>(
+          getBackendUrl(createTempOrderApi),
+          tempOrderData,
+          {
+            headers: {
+              Authorization: authorization,
+            },
+            withCredentials: true,
+          },
+        );
+
+      await wait(60 * 1000);
+      // 2. Confirm Payment with Stripe
+      const { error, ...rest } = await stripe.confirmPayment({
+        elements,
+        // confirmParams: {
+        //   return_url: `${process.env.NEXT_PUBLIC_URL}/user/order-complete`,
+        // },
+        redirect: "if_required",
+      });
+
+
+      if (error) {
+        console.error("Payment Error:", error.message);
+        setPaymentError(error?.message || "");
+        return;
+      }
+
+
+      // Redirect user after successful payment (handled via return_url)
+    } catch (error) {
+      console.error("Error processing payment:", error);
+      setPaymentError(
+        getAxiosErrorMessage(error)?.error ||
+          "An unexpected error occurred. Please try again.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="space-y-4">
+      <PaymentElement options={{}} />
+      {paymentError && (
+        <FormResultMessage message={paymentError} variant="destructive" />
+      )}
+      <Button disabled={!stripe || loading} className="w-full">
+        {loading ? "Processing..." : "Place Order"}
+      </Button>
+    </form>
+  );
+};
+
+export default PaymentForm;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+export const getProducts = async (
+  paginationParams: PaginationParams & {
+    sortBy?: keyof typeof products;
+    category?: string;
+    priceFilter?: number;
+  }
+) => {
+  const {
+    limit = 10,
+    offset = 0,
+    search = "",
+    priceFilter,
+    sortBy = "createdAt",
+    category,
+  } = paginationParams;
+
+  console.log({offset, limit, search, priceFilter});
+
+  // Full-text search across multiple fields
+  const searchQuery = search
+    ? sql`
+      (
+        to_tsvector('english', 
+          coalesce(${products.name}, '') || ' ' || 
+          coalesce(${products.categoryName}, '') || ' ' || 
+          coalesce(${products.description}, '')
+        ) @@ websearch_to_tsquery('english', ${search})
+        OR ${products.name} % ${search}  -- Fuzzy matching with pg_trgm
+      )
+    `
+    : undefined;
+
+  // Handle category filter (partial match)
+  const categoryFilter = category
+    ? like(products.categoryName, `%${category}%`)
+    : undefined;
+
+  // Handle price filter (<= specified price)
+  const priceFilterQuery =
+    priceFilter !== undefined && !isNaN(priceFilter)
+      ? lte(products.price, priceFilter.toString())
+      : undefined;
+
+  // Combine all filters into a single where clause
+  const filters = [searchQuery, categoryFilter, priceFilterQuery].filter(
+    Boolean
+  );
+  const whereClause = filters.length > 0 ? and(...filters) : undefined;
+
+  // Fetch products with pagination and sorting
+  const productList = await db
     .select({
       id: products.id,
       name: products.name,
       description: products.description,
-      sku: products.sku,
-      rating: products.rating,
-      categoryId: products.categoryId,
-      currentVariantType: products.currentVariantType,
-      variantValue: products.variantValue,
-      brand: products.brand,
-      parentId: products.parentId,
+      price: products.price,
+      discountedPrice: products.discountedPrice,
       primaryImage: products.primaryImage,
       stock: products.stock,
-      price: products.price,
-      isAvailable: products.isAvailable,
-      discountedPrice: products.discountedPrice,
-      sortDescription: products.sortDescription,
-      createdAt: products.createdAt,
-      updatedAt: products.updatedAt,
-      meta: products.meta,
-      subImage: {
-        image: productImages.imageUrl,
-      },
+      brand: products.brand,
+      categoryName: products.categoryName,
     })
     .from(products)
-    .leftJoin(productImages, eq(productImages.productId, products.id))
-    .leftJoin(parent, eq(parent.id, products.id))
-    .where(
-      // and(
-      or(eq(products.id, productId), eq(products.parentId, productId))
-      // eq(products.isAvailable, true),
-      // gte(products.stock, 1)
-      // )
-    )
-    .execute();
+    .where(whereClause)
+    .limit(limit)
+    .offset(offset)
+    .orderBy((products[sortBy] || products.createdAt) as any);
 
-  if (!productData?.length) {
-    return null;
-  }
+  // Get the total count for pagination
+  const totalProducts = await db
+    .select({ count: count() })
+    .from(products)
+    .where(whereClause);
 
-  let primaryProduct = productData.find((p) => p.id === productId)!;
-  if (!primaryProduct) {
-    return null;
-  }
-
-  // const formate =
-
-  const copyProductData = [...productData];
-  const subImage: SubImage[] = [];
-
-  const v = new Map();
-  (productData || []).forEach((p) => {
-    if (p.id === productId) {
-      subImage.push({ image: p.subImage?.image! });
-    }
-
-    if (p.id !== productId) {
-      // console.log({ p });
-      v.set(p.id, { ...p, subImage: undefined });
-    }
-  });
-
-  const g = [...v.values()];
   return {
-    primaryProduct: { ...primaryProduct, subImage },
-    g,
-    productData,
-  };
-
-  // const data = productData;
-  // const identifier = productId;
-
-  // const mainProduct = data.find(
-  //   (item) => item.id === identifier || item.parentId === identifier
-  // );
-
-  // if (!mainProduct) return null;
-
-  // // Extract subImages for the main product
-  // const subImages = data
-  //   .filter((item) => item.imageUrl?.productId === mainProduct.id)
-  //   .map((item) => ({ imageUrl: item?.imageUrl?.imageUrl }));
-
-  // // Find product variants related to the main product
-  // const productVariants = data
-  //   .filter((item) => item.parentId === mainProduct.id)
-  //   .map((item) => ({
-  //     ...item,
-  //     subImages: data
-  //       .filter((sub) => sub.imageUrl?.productId === item.id)
-  //       .map((sub) => ({ imageUrl: sub.imageUrl?.imageUrl })),
-  //   }));
-
-  // // Create the response object
-  // return {
-  //   product: {
-  //     ...mainProduct,
-  //     subImages,
-  //   },
-  //   productVariants,
-  // };
-};
-
-
-
-
-
-
-
-
-
-
-import { and, eq, gte, isNull, or } from "drizzle-orm/expressions";
-import { db } from "@/db/db";
-import { productImages, products } from "@/db/schema";
-import { SubImage } from "@/types";
-import { alias } from "drizzle-orm/pg-core";
-export const getProductDetails = async (id: string) => {
-  // const parent = alias(products, "parent");
-  // const children = alias(products, "children");
-  const parent = alias(products, "parent");
-  const sibling = alias(products, "sibling");
-
-  const result = await db
-    .select({
-      productId: products.id,
-      productName: products.name,
-      parent: {
-        id: parent.id,
-        name: parent.name,
-      },
-      parentName: parent.name,
-      sibling: {
-        id: sibling.id,
-        name: sibling.name,
-      },
-    })
-    .from(products)
-    .leftJoin(parent, eq(products.parentId, parent.id)) // Get the parent of the current product
-    .leftJoin(sibling, eq(sibling.parentId, parent.id)) // Get all products that share the same parentId
-    .where(eq(products.id, id)); // Filter by the current product's ID
-
-  // Filter out the current product from the sibling list in JavaScript
-  const siblings = result.filter((r) => r?.sibling?.id !== id);
-
-  const output = {
-    ...result[0], // Assuming result is an array
-    siblings: siblings.map((s) => ({
-      id: s?.sibling?.id,
-      name: s?.sibling?.name,
-    })),
-  };
-
-  const all = await db.select().from(products);
-  return { result, output, all };
-  // // Separate the main product and its variants
-  // const mainProduct = result.find(
-  //   (p) => p.product.id === id || p.product.parentId === null
-  // );
-
-  // const productVariants = result.filter(
-  //   (p) => p.product.parentId === mainProduct?.product.id
-  // );
-
-  // return {
-  //   product: mainProduct?.product,
-  //   productImages: mainProduct?.images ? [mainProduct.images] : [],
-  //   productVariants: productVariants.map((variant) => ({
-  //     ...variant.product,
-  //     images: variant.images ? [variant.images] : [],
-  //   })),
-  // };
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { and, eq, gte, isNull, or, notLike, ne } from "drizzle-orm/expressions";
-import { db } from "@/db/db";
-import { productImages, products } from "@/db/schema";
-import { SubImage } from "@/types";
-import { alias } from "drizzle-orm/pg-core";
-export const getProductDetails = async (id: string) => {
-  // const parent = alias(products, "parent");
-  // const children = alias(products, "children");
-  const parent = alias(products, "parent");
-  const sibling = alias(products, "sibling");
-
-  const result = await db
-    .select({
-      productId: products.id,
-      productName: products.name,
-      parent: {
-        id: parent.id,
-        name: parent.name,
-      },
-      parentName: parent.name,
-      siblingId: sibling.id,
-      siblingName: sibling.name,
-      imageUrl: productImages.imageUrl,
-    })
-    .from(products)
-    .leftJoin(parent, eq(products.parentId, parent.id)) // Join with parent
-    .leftJoin(
-      sibling,
-      and(eq(sibling.parentId, parent.id), ne(sibling.id, products.id))
-    ) // Join with siblings
-    .leftJoin(productImages, eq(productImages.productId, products.id)) // Join with product images
-    .where(eq(products.id, id));
-
-  // Deduplicate siblings
-  const siblings = Array.from(
-    new Map(
-      result
-        .filter((r) => r.siblingId !== null)
-        .map((r) => [r.siblingId, { id: r.siblingId, name: r.siblingName }])
-    ).values()
-  );
-
-  // Group images
-  const images = result
-    .filter((r) => r.imageUrl !== null)
-    .map((r) => ({ url: r.imageUrl }));
-
-  const output = {
-    productId: result[0].productId,
-    productName: result[0].productName,
-    parent: {
-      id: result[0].parent?.id,
-      name: result[0].parent?.name,
+    products: productList,
+    pagination: {
+      total: totalProducts[0]?.count || 0, // Handle case with no results
+      limit,
+      offset,
     },
-    parentName: result[0].parentName,
-    siblings: siblings, // Deduplicated siblings
-    images: images, // Grouped product images
   };
-
-  const all = await db.select().from(products);
-  return { output, result, all };
-  // // Separate the main product and its variants
-  // const mainProduct = result.find(
-  //   (p) => p.product.id === id || p.product.parentId === null
-  // );
-
-  // const productVariants = result.filter(
-  //   (p) => p.product.parentId === mainProduct?.product.id
-  // );
-
-  // return {
-  //   product: mainProduct?.product,
-  //   productImages: mainProduct?.images ? [mainProduct.images] : [],
-  //   productVariants: productVariants.map((variant) => ({
-  //     ...variant.product,
-  //     images: variant.images ? [variant.images] : [],
-  //   })),
-  // };
-};
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { and, eq, gte, isNull, or, notLike, ne } from "drizzle-orm/expressions";
-import { db } from "@/db/db";
-import { productImages, products } from "@/db/schema";
-import { SubImage } from "@/types";
-import { alias } from "drizzle-orm/pg-core";
-export const getProductDetails = async (id: string) => {
-  // const parent = alias(products, "parent");
-  // const children = alias(products, "children");
-  const parent = alias(products, "parent");
-  const sibling = alias(products, "sibling");
-
-const result = await db
-  .select({
-    productId: products.id,
-    productName: products.name,
-    parent: {
-      id: parent.id,
-      name: parent.name,
-    },
-    parentName: parent.name,
-    siblingId: sibling.id,
-    siblingName: sibling.name,
-    imageUrl: productImages.imageUrl,
-  })
-  .from(products)
-  .leftJoin(parent, eq(products.parentId, parent.id)) // Join with parent
-  .leftJoin(
-    sibling,
-    or(
-      // Find siblings where this product is a child, or where it is the parent itself
-      and(
-        eq(sibling.parentId, products.parentId),
-        ne(sibling.id, products.id)
-      ),
-      eq(sibling.parentId, products.id)
-    )
-  ) // Join with siblings
-  .leftJoin(productImages, eq(productImages.productId, products.id)) // Join with product images
-  .where(eq(products.id, id));
-
-// Deduplicate siblings
-const siblings = Array.from(
-  new Map(
-    result
-      .filter((r) => r.siblingId !== null)
-      .map((r) => [r.siblingId, { id: r.siblingId, name: r.siblingName }])
-  ).values()
-);
-
-// Group images
-const images = result
-  .filter((r) => r.imageUrl !== null)
-  .map((r) => ({ url: r.imageUrl }));
-
-const output = {
-  productId: result[0].productId,
-  productName: result[0].productName,
-  parent: result[0].parent?.id
-    ? {
-        id: result[0].parent.id,
-        name: result[0].parent.name,
-      }
-    : {}, // Handle parent being empty when it's a top-level product
-  parentName: result[0].parentName ?? null,
-  siblings: siblings, // Deduplicated siblings
-  images: images, // Grouped product images
-};
-
-  const all = await db.select().from(products);
-  return { output, result, all };
 };

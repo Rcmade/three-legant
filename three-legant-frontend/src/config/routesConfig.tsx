@@ -34,3 +34,7 @@ export const LOGIN_REDIRECT = "/auth/login";
 export const apiPrefixRoutes = "/api";
 
 export const homeUrl = "/";
+
+export const adminPrefixRoutes = "/admin";
+
+export const DEFAULT_LOGOUT_REDIRECT = "/";

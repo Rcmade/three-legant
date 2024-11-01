@@ -9,6 +9,7 @@ import { revalidatePath, revalidateTag } from "next/cache";
 import { headers } from "next/headers";
 
 export const getAllCart = async (searchParams: string = "") => {
+  
   try {
     const data: CartsResponseT = await fetcher(
       `${getBackendUrl(getAllCartProductApi)}${searchParams}`,
@@ -22,7 +23,7 @@ export const getAllCart = async (searchParams: string = "") => {
     );
     return data;
   } catch (error: any) {
-    return;
+    return 
     // throw getAxiosErrorMessage(error);
   }
 };

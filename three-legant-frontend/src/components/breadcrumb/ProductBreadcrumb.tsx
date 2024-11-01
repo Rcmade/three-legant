@@ -34,29 +34,28 @@ const ProductBreadcrumb = ({
         {...rest}
       >
         <BreadcrumbItem>
-          <BreadcrumbLink href={"/"}>Home</BreadcrumbLink>
+          <BreadcrumbLink href="/">Home</BreadcrumbLink>
         </BreadcrumbItem>
         <BreadcrumbSeparator />
         {list.map((item, index) => {
-          const formateHref = item?.replaceAll("/", ""); // Removes any slashes from the item
+          // Extract the last segment for display (e.g., 'mouse' from '/shop/mouse')
+          const formattedItem = item.split("/").filter(Boolean).pop();
 
-          // Create the href while ensuring no extra slashes appear
-          let createHref = baseUrl + "/" + list.slice(0, index + 1).join("/");
+          // Use the complete path for the href
+          const createHref = `${baseUrl}${item}`.replace(/\/{2,}/g, "/");
 
-          // Replace any occurrence of multiple slashes (e.g., "///") with a single "/"
-          createHref = createHref.replace(/\/{2,}/g, "/");
           return (
             <React.Fragment key={index}>
               <BreadcrumbItem>
-                {list?.length - 1 === index ? (
-                  <BreadcrumbPage>{formateHref}</BreadcrumbPage>
+                {index === list.length - 1 ? (
+                  <BreadcrumbPage>{formattedItem}</BreadcrumbPage>
                 ) : (
                   <BreadcrumbLink href={createHref}>
-                    {formateHref}
+                    {formattedItem}
                   </BreadcrumbLink>
                 )}
               </BreadcrumbItem>
-              {list.length - 1 !== index && <BreadcrumbSeparator />}
+              {index < list.length - 1 && <BreadcrumbSeparator />}
             </React.Fragment>
           );
         })}

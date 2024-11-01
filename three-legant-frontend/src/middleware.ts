@@ -1,15 +1,18 @@
 import {
   LOGIN_REDIRECT,
+  adminPrefixRoutes,
   apiAuthPrefix,
   apiPrefixRoutes,
   authRoutes,
   publicRoutes,
 } from "./config/routesConfig";
+import { getToken } from "next-auth/jwt";
 import authProvidersConfig from "@/config/authProvidersConfig";
 import NextAuth from "next-auth";
+import { NextResponse } from "next/server";
 const { auth } = NextAuth(authProvidersConfig);
 
-export default auth((req) => {
+export default auth(async (req) => {
   const { nextUrl } = req;
   const isLoggedIn = !!req.auth;
   const isApiAuthRoute = nextUrl.pathname.startsWith(apiAuthPrefix);
@@ -32,6 +35,16 @@ export default auth((req) => {
     return;
   }
 
+  const isAdmin = nextUrl.pathname.startsWith(adminPrefixRoutes);
+  if (isAdmin) {
+    const token = await getToken({
+      req,
+      secret: process.env.AUTH_SECRET,
+    });
+    if (token?.role !== "ADMIN") {
+      return NextResponse.rewrite(new URL("/unauthorize", nextUrl));
+    }
+  }
   if (!isLoggedIn && !isPublicRoute) {
     let callbackUrl = nextUrl.pathname;
     if (nextUrl.search) {

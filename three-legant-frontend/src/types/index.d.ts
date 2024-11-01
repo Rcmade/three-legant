@@ -6,11 +6,18 @@ import {
   orderComplete,
 } from "@/content/checkoutContent";
 import { companyValueIconContent } from "@/content/companyValueContent";
-import { addressSchema } from "@/zodSchema/addressSchema";
+import {
+  addressFormSchema,
+  addressSchema,
+  userAddressSchema,
+} from "@/zodSchema/addressSchema";
 import { contactInfoSchema } from "@/zodSchema/contactInfoSchema";
 import { userInfoSchema } from "@/zodSchema/userInfoSchema";
 import { VariantProps } from "class-variance-authority";
 import { z } from "zod";
+import { ProductDetailsResponseT } from "./apiResponse";
+import { checkoutSchema } from "@/zodSchema/checkoutSchema";
+import productSchema from "@/zodSchema/productSchema";
 export type AlertVarientT = VariantProps<typeof alertVariants>["variant"];
 
 export type PageProps = {
@@ -19,7 +26,7 @@ export type PageProps = {
 };
 
 export type SearchParams = {
-  [key: string]: string | number | boolean;
+  [key: string]: string;
 };
 
 export type Children = {
@@ -38,8 +45,11 @@ export type CheckOutBreadcrumb =
   (typeof checkoutBreadcrumb)[keyof typeof checkoutBreadcrumb];
 
 export type ContactInfoT = z.infer<typeof contactInfoSchema>;
-export type AddressInfoT = z.infer<typeof addressSchema>;
+export type AddressInfoT = z.infer<typeof addressFormSchema>;
 export type UserInfoSChema = z.infer<typeof userInfoSchema>;
+export type CheckoutSchemaT = z.infer<typeof checkoutSchema>;
+export type UserAddressSchemaT = z.infer<typeof userAddressSchema>;
+export type ProductSchemaT = z.infer<typeof productSchema>;
 
 export type ChangeProductQtyProps = {
   id: string;
@@ -49,8 +59,21 @@ export type ChangeProductQtyProps = {
 
 export type PaginationParams = {
   limit?: number;
-  offset?: number;
+  page?: number;
   search?: string;
 };
 
 export type RevalidationType = "tag" | "path";
+
+export type ProductCommonAdditionalInfoT = ProductDetailsResponseT["product"];
+
+export type HandleAddToCartT = {
+  productId: string;
+  qty: string | number;
+  authorization: string;
+};
+
+export type CheckoutPageCurrentFormT =
+  | "contactInfo"
+  | "payment"
+  | "shippingMethod";

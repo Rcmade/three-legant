@@ -10,6 +10,14 @@ import user from "@/routes/user";
 import cart from "@/routes/cart";
 import { cors } from "hono/cors";
 import { initAuthConfig, type AuthConfig } from "@hono/auth-js";
+import orders from "./routes/orders";
+import addressRoute from "./routes/address";
+import shippings from "./routes/shipping";
+import paymentsRoute from "./routes/payments";
+import webhooks from "./routes/webhooks";
+import tempOrders from "./routes/tempOrder";
+import category from "./routes/category";
+import adminProducts from "./routes/admin/products";
 
 const app = new Hono();
 
@@ -41,10 +49,18 @@ export const routes = app
   .route("/test", testRoute)
   .route("/api/user", user)
   .route("/api/cart", cart)
+  .route("/api/address", addressRoute)
+  .route("/api/shipping", shippings)
+  .route("/api/payments", paymentsRoute)
+  .route("/api/category", category)
   .route("/api/wishlist", wishlist)
   .route("/api/products", product)
+  .route("/api/admin/products", adminProducts)
+  .route("/api/orders", orders)
+  .route("/api/temp-orders", tempOrders)
+  .route("/api/webhooks", webhooks)
   .route("/api/banners", banner);
-
+;
 export type AppType = typeof routes;
 
 function getAuthConfig(c: Context): AuthConfig {

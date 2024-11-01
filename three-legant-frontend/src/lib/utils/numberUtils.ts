@@ -17,3 +17,7 @@ export const calculateDiscountPercentage = ({
 
   return parseFloat(discountPercentage.toFixed(2)); // Rounded to 2 decimal places
 };
+
+export function getProperNumber(num: number | string | null): number {
+  return typeof num === "number" ? num : num ? +num : 0;
+}

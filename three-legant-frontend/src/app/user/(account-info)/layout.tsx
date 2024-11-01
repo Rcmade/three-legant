@@ -5,15 +5,14 @@ import { Children } from "@/types";
 import { redirect } from "next/navigation";
 
 export default async function Layout({ children }: Children) {
-
   return (
     <section className="">
-      <div className="flex w-full justify-center">
+      <div className="my-6 flex w-full justify-center">
         <AccountInfoHeading />
       </div>
-      <div className="flex flex-col gap-16 md:flex-row">
+      <div className="flex flex-col gap-14 md:flex-row">
         <UserInfoSidebar />
-        <main>{children}</main>
+        <main className="flex-1">{children}</main>
       </div>
     </section>
   );

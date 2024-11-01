@@ -1,1 +1,0 @@
-ALTER TABLE "oAuthProjectConfig" ADD COLUMN "scope" "OAuthScope" DEFAULT 'email profile' NOT NULL;

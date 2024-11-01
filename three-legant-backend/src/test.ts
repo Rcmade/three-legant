@@ -1,4 +1,4 @@
-import { eq, or } from "drizzle-orm";
+import { eq, or, sql } from "drizzle-orm";
 import { db } from "./db/db";
 import { productImages, products } from "./db/schema";
 
@@ -7,7 +7,6 @@ const d = async () => {
   //     .select()
   //     .from(productVariants)
   //     .where(eq(productVariants.productId, "l1WZsIiSUtZQ"));
-  //   console.log({ result });
 
   // const va = await db.select({ id: productVariants.id }).from(productVariants);
 
@@ -28,12 +27,30 @@ const d = async () => {
   //   .select()
   //   .from(productVariants)
   //   .where(eq(productVariants.id, "-bCCpLFLP8Sf"));
-  // console.log({ a });
 
-  const a = await db
+  // const a = await db
+  //   .select()
+  //   .from(productImages)
+  //   .where(eq(productImages.productId, "R2aq7tH1Q394"));
+
+  //   const title = "steel";
+
+  //  const res =  await db
+  //     .select()
+  //     .from(products)
+  //     .where(
+  //       sql`to_tsvector('english', ${products.name}) @@ websearch_to_tsquery('english', ${title})`
+  //     );
+
+  const userProduct = await db
     .select()
-    .from(productImages)
-    .where(eq(productImages.productId, "R2aq7tH1Q394"));
+    .from(products)
+    .where(eq(products.userId, "XSTaAGma3Kw"));
+
+  console.dir(userProduct, {
+    colors: true,
+    depth: Infinity,
+  });
 };
 
 d();

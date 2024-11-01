@@ -6,12 +6,11 @@ import {
   timestamp,
   boolean,
 } from "drizzle-orm/pg-core";
-import { nId } from "@/lib/utils/dbUtils";
 import { commonCreatedField } from "./commonSchemaFields";
 import { users } from "./userSchema";
 
 export const banners = pgTable("banners", {
-  id: text("id").primaryKey().$defaultFn(nId),
+  ...commonCreatedField,
   userId: text("user_id")
     .references(() => users.id, { onDelete: "cascade", onUpdate: "cascade" })
     .notNull(),
@@ -23,5 +22,4 @@ export const banners = pgTable("banners", {
   priority: integer("priority").default(0), // Priority for display ordering
   startDate: timestamp("start_date"),
   endDate: timestamp("end_date"),
-  ...commonCreatedField,
 });

@@ -123,7 +123,7 @@ export const getAllCartProducts = async (
 ) => {
   const {
     limit = 10, // Default limit if not provided
-    offset = 0,
+    page = 1,
     priceFilter,
     sortBy = "createdAt",
     noLimit = false, // Additional param for checking if limit should be ignored
@@ -160,7 +160,8 @@ export const getAllCartProducts = async (
     .from(UserCart)
     .innerJoin(products, eq(UserCart.productId, products.id))
     .where(whereClause)
-    .offset(offset)
+    .offset(Math.max(page - 1, 0) * limit)
+    // .offset((page - 1) * limit)
     .orderBy(desc((UserCart[sortBy] as any) || UserCart.updatedAt))
     .$dynamic();
   if (!noLimit) {
@@ -198,7 +199,7 @@ export const getAllCartProducts = async (
       : {
           total: totalCount,
           limit,
-          offset,
+          page,
         },
   };
 };
